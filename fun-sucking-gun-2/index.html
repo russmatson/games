@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fun Sucking Gun 2</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #1a0a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: 'Courier New', monospace;
+      color: #fff;
+      overflow: hidden;
+    }
+    h1 { font-size: 2rem; color: #ff4dff; text-shadow: 0 0 12px #ff00ff; margin-bottom: 8px; letter-spacing: 2px; }
+    #hud { display: flex; gap: 40px; margin-bottom: 8px; font-size: 1rem; }
+    #hud span { color: #ffe066; }
+    #gameCanvas { border: 3px solid #ff4dff; box-shadow: 0 0 24px #ff00ff88; cursor: crosshair; background: #0d0020; display: block; }
+    #message { margin-top: 10px; font-size: 1.3rem; min-height: 1.6em; color: #ff4dff; text-shadow: 0 0 8px #ff00ff; }
+    #instructions { margin-top: 6px; font-size: 0.78rem; color: #aaa; }
+    #backBtn { display:inline-block; margin-top:10px; margin-right:10px; padding:7px 18px; font-size:0.75rem; background:transparent; color:#aaa; border:1px solid #444; border-radius:6px; cursor:pointer; text-decoration:none; }
+    #backBtn:hover { color:#fff; border-color:#ff4dff; }
+    #restartBtn { display: none; margin-top: 10px; padding: 10px 30px; font-size: 1rem; background: #ff4dff; color: #1a0a2e; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; letter-spacing: 1px; box-shadow: 0 0 12px #ff00ff; }
+    #restartBtn:hover { background: #fff; }
+    #btns { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
+  </style>
+</head>
+<body>
+  <h1>&#x1F52B; FUN SUCKING GUN 2</h1>
+  <div id="hud">
+    <div>Fun Sucked: <span id="score">0</span></div>
+    <div>Remaining: <span id="remaining">0</span></div>
+    <div>Time: <span id="timer">30</span>s</div>
+  </div>
+  <canvas id="gameCanvas" width="700" height="420"></canvas>
+  <div id="message">Move near people and CLICK to suck their fun!</div>
+  <div id="instructions">WASD / Arrow Keys to move | Click to fire Fun Sucking Gun</div>
+  <div id="btns">
+    <a href="../index.html" id="backBtn">&#x2190; Back to Arcade</a>
+    <button id="restartBtn" onclick="initGame()">PLAY AGAIN</button>
+  </div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const remainingEl = document.getElementById('remaining');
+    const timerEl = document.getElementById('timer');
+    const messageEl = document.getElementById('message');
+    const restartBtn = document.getElementById('restartBtn');
+    const W = canvas.width, H = canvas.height;
+    const SUCK_RANGE = 90, PEOPLE_COUNT = 12, GAME_TIME = 30;
+    const NAMES = ['Alice','Bob','Carol','Dave','Eve','Frank','Grace','Hank','Ivy','Jack','Karen','Leo'];
+    const FUN_EMOJIS = ['&#x1F602;','&#x1F389;','&#x1F973;','&#x1F604;','&#x1F388;','&#x1F606;','&#x1F929;','&#x1F38A;','&#x1F942;','&#x1F3B8;','&#x1F3AE;','&#x1F483;'];
+    const SAD_EMOJIS = ['&#x1F612;','&#x1F611;','&#x1F636;','&#x1F610;','&#x1F641;','&#x1F614;'];
+    let player, people, score, timeLeft, gameOver, keys, particles, beamActive, beamTarget, animId;
+    function rand(min, max) { return Math.random()*(max-min)+min; }
+    function initGame() {
+      player={x:W/2,y:H/2,size:24,speed:3.5,angle:0};
+      score=0;timeLeft=GAME_TIME;gameOver=false;keys={};particles=[];beamActive=false;beamTarget=null;
+      restartBtn.style.display='none';
+      messageEl.textContent='Move near people and CLICK to suck their fun!';
+      people=[];
+      for(let i=0;i<PEOPLE_COUNT;i++){
+        let px,py;
+        do{px=rand(40,W-40);py=rand(40,H-40);}while(Math.hypot(px-W/2,py-H/2)<80);
+        people.push({x:px,y:py,name:NAMES[i],emoji:FUN_EMOJIS[i],fun:100,maxFun:100,sucked:false,dx:rand(-0.6,0.6),dy:rand(-0.6,0.6),fleeing:false,fleeTimer:0});
+      }
+      scoreEl.textContent='0';remainingEl.textContent=PEOPLE_COUNT;
+      if(animId)cancelAnimationFrame(animId);
+      clearInterval(window._timerInterval);
+      window._timerInterval=setInterval(()=>{if(gameOver)return;timeLeft--;timerEl.textContent=timeLeft;if(timeLeft<=0)endGame();},1000);
+      loop();
+    }
+    function endGame(){
+      gameOver=true;clearInterval(window._timerInterval);
+      const total=people.reduce((s,p)=>s+(p.maxFun-p.fun),0);
+      const pct=Math.round(total/(PEOPLE_COUNT*100)*100);
+      messageEl.textContent='Game Over! You sucked '+pct+'% of total fun. Score: '+score;
+      restartBtn.style.display='inline-block';
+    }
+    canvas.addEventListener('click',(e)=>{
+      if(gameOver)return;
+      const rect=canvas.getBoundingClientRect();
+      const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+      player.angle=Math.atan2(my-player.y,mx-player.x);
+      let closest=null,closestDist=SUCK_RANGE;
+      for(const p of people){if(p.fun<=0)continue;const d=Math.hypot(p.x-player.x,p.y-player.y);if(d<closestDist){closestDist=d;closest=p;}}
+      if(closest){
+        beamActive=true;beamTarget=closest;
+        const suck=Math.min(closest.fun,rand(18,35));
+        closest.fun-=suck;score+=Math.round(suck);scoreEl.textContent=score;
+        spawnParticles(closest.x,closest.y);
+        closest.fleeing=true;closest.fleeTimer=90;
+        if(closest.fun<=0){
+          closest.sucked=true;closest.fun=0;
+          closest.emoji=SAD_EMOJIS[Math.floor(Math.random()*SAD_EMOJIS.length)];
+          const left=people.filter(p=>p.fun>0).length;remainingEl.textContent=left;
+          if(left===0){setTimeout(endGame,500);}
+        }
+        setTimeout(()=>{beamActive=false;beamTarget=null;},180);
+      }
+    });
+    document.addEventListener('keydown',e=>{keys[e.key]=true;});
+    document.addEventListener('keyup',e=>{keys[e.key]=false;});
+    function spawnParticles(x,y){for(let i=0;i<8;i++){const a=rand(0,Math.PI*2),s=rand(1.5,4);particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:60});}}
+    function update(){
+      if(gameOver)return;
+      let dx=0,dy=0;
+      if(keys['ArrowLeft']||keys['a']||keys['A'])dx-=1;if(keys['ArrowRight']||keys['d']||keys['D'])dx+=1;
+      if(keys['ArrowUp']||keys['w']||keys['W'])dy-=1;if(keys['ArrowDown']||keys['s']||keys['S'])dy+=1;
+      if(dx!==0&&dy!==0){dx*=0.707;dy*=0.707;}
+      player.x=Math.max(player.size,Math.min(W-player.size,player.x+dx*player.speed));
+      player.y=Math.max(player.size,Math.min(H-player.size,player.y+dy*player.speed));
+      for(const p of people){
+        if(p.fun<=0)continue;
+        const dist=Math.hypot(p.x-player.x,p.y-player.y);
+        if(p.fleeing&&p.fleeTimer>0){p.fleeTimer--;const a=Math.atan2(p.y-player.y,p.x-player.x);p.dx=Math.cos(a)*1.8;p.dy=Math.sin(a)*1.8;if(p.fleeTimer===0)p.fleeing=false;}
+        else if(dist<130){const a=Math.atan2(p.y-player.y,p.x-player.x);p.dx=p.dx*0.8+Math.cos(a)*0.6;p.dy=p.dy*0.8+Math.sin(a)*0.6;}
+        else{p.dx+=rand(-0.1,0.1);p.dy+=rand(-0.1,0.1);const spd=Math.hypot(p.dx,p.dy);if(spd>1){p.dx/=spd;p.dy/=spd;}}
+        p.x+=p.dx;p.y+=p.dy;
+        if(p.x<20){p.x=20;p.dx*=-1;}if(p.x>W-20){p.x=W-20;p.dx*=-1;}
+        if(p.y<20){p.y=20;p.dy*=-1;}if(p.y>H-20){p.y=H-20;p.dy*=-1;}
+      }
+      for(const pt of particles){pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=0.1;pt.life--;}
+      for(let i=particles.length-1;i>=0;i--){if(particles[i].life<=0)particles.splice(i,1);}
+    }
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      ctx.strokeStyle='#1e0040';ctx.lineWidth=1;
+      for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+      for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+      ctx.beginPath();ctx.arc(player.x,player.y,SUCK_RANGE,0,Math.PI*2);ctx.strokeStyle='rgba(255,77,255,0.18)';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+      if(beamActive&&beamTarget){ctx.beginPath();ctx.moveTo(player.x,player.y);ctx.lineTo(beamTarget.x,beamTarget.y);ctx.strokeStyle='#ff00ff';ctx.lineWidth=4;ctx.shadowBlur=18;ctx.shadowColor='#ff00ff';ctx.stroke();ctx.shadowBlur=0;ctx.lineWidth=1;}
+      for(const p of people){
+        const inRange=Math.hypot(p.x-player.x,p.y-player.y)<SUCK_RANGE&&p.fun>0;
+        const bW=36,bH=5;ctx.fillStyle='#333';ctx.fillRect(p.x-bW/2,p.y-28,bW,bH);
+        ctx.fillStyle=p.fun>60?'#44ff88':p.fun>30?'#ffe066':'#ff4444';ctx.fillRect(p.x-bW/2,p.y-28,bW*(p.fun/p.maxFun),bH);
+        if(inRange){ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.fillStyle='rgba(255,77,255,0.18)';ctx.fill();}
+        ctx.beginPath();ctx.arc(p.x,p.y,16,0,Math.PI*2);ctx.fillStyle=p.sucked?'#2a2a4a':inRange?'#4a006a':'#230046';ctx.fill();ctx.strokeStyle=p.sucked?'#444':inRange?'#ff4dff':'#7700cc';ctx.lineWidth=2;ctx.stroke();
+        ctx.font='16px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.emoji,p.x,p.y);
+        ctx.font='10px Courier New';ctx.fillStyle=p.sucked?'#555':inRange?'#ff88ff':'#aaa';ctx.fillText(p.name,p.x,p.y+26);
+      }
+      for(const pt of particles){ctx.globalAlpha=pt.life/60;ctx.beginPath();ctx.arc(pt.x,pt.y,4,0,Math.PI*2);ctx.fillStyle='#ff00ff';ctx.fill();}
+      ctx.globalAlpha=1;
+      ctx.save();ctx.translate(player.x,player.y);ctx.rotate(player.angle);
+      ctx.beginPath();ctx.arc(0,0,player.size/2,0,Math.PI*2);ctx.fillStyle='#330066';ctx.fill();ctx.strokeStyle='#cc00ff';ctx.lineWidth=2.5;ctx.stroke();
+      ctx.fillStyle='#cc00ff';ctx.fillRect(6,-4,20,8);ctx.fillStyle='#ff00ff';ctx.fillRect(24,-3,6,6);
+      ctx.font='14px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('&#x1F608;',0,0);
+      ctx.restore();
+      const nearAny=people.some(p=>p.fun>0&&Math.hypot(p.x-player.x,p.y-player.y)<SUCK_RANGE);
+      if(nearAny){ctx.font='bold 13px Courier New';ctx.fillStyle='#ff4dff';ctx.textAlign='center';ctx.fillText('CLICK TO SUCK!',player.x,player.y-34);}
+    }
+    function loop(){update();draw();if(!gameOver)animId=requestAnimationFrame(loop);}
+    initGame();
+  </script>
+</body>
+</html>
