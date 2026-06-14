@@ -71,12 +71,18 @@ body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#1a1a2e 0
 #kid-response-text{font-size:0.95rem;color:#555;margin-bottom:12px;font-style:italic;}
 #play-again-btn{background:linear-gradient(135deg,#00c853,#009624);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform 0.1s;}
 #play-again-btn:hover{transform:scale(1.05);}
+
+#mute-btn{background:rgba(0,0,0,0.25);border:none;border-radius:8px;color:#fff;font-size:1.1rem;cursor:pointer;padding:4px 10px;margin-left:10px;transition:background 0.2s;vertical-align:middle;}
+#mute-btn:hover{background:rgba(0,0,0,0.45);}
 </style>
 </head>
 <body>
+<audio id="bg-music" loop preload="auto">
+  <source src="https://cdn1.suno.ai/606bafe0-c2d7-446c-9430-baf51c2f2622.mp3" type="audio/mpeg">
+</audio>
 <div id="combo-popup">CHAOS!</div>
 <div id="game">
-  <div id="header"><h1>Sunshine State Meltdown!</h1><div id="scoreboard"><div class="label">Chaos Score</div><div class="score" id="score-display">0</div></div></div>
+  <div id="header"><h1>Sunshine State Meltdown! <button id="mute-btn" onclick="toggleMute()" title="Toggle Music">&#x1F50A;</button></h1><div id="scoreboard"><div class="label">Chaos Score</div><div class="score" id="score-display">0</div></div></div>
   <div id="heat-bar-wrap"><div id="heat-label">REACTOR HEAT -- 0%</div><div id="heat-track"><div id="heat-fill" style="width:0%"></div></div></div>
   <div id="avatar-screen">
     <h2>Choose Your Kid!</h2>
@@ -240,6 +246,20 @@ function playAgain(){
   document.getElementById('main-game').style.display='none';
   document.getElementById('avatar-screen').style.display='block';
 }
+
+function toggleMute(){
+  var audio=document.getElementById('bg-music');
+  var btn=document.getElementById('mute-btn');
+  if(audio.muted){audio.muted=false;btn.innerHTML='&#x1F50A;';}
+  else{audio.muted=true;btn.innerHTML='&#x1F507;';}
+}
+// Autoplay on first user interaction (browser policy)
+function startMusic(){
+  var audio=document.getElementById('bg-music');
+  if(audio.paused){audio.play().catch(function(){});}
+  document.removeEventListener('click',startMusic);
+}
+document.addEventListener('click',startMusic);
 </script>
 </body>
 </html>
