@@ -5,82 +5,107 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sunshine State Meltdown!</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap');
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{
-    font-family:'Nunito',sans-serif;
-    background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
-    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
-  }
-  #game{background:#fff;border-radius:24px;max-width:680px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;}
-  #header{background:linear-gradient(135deg,#ff6b35,#f7931e);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;}
-  #header h1{font-family:'Fredoka One',cursive;color:#fff;font-size:1.6rem;text-shadow:2px 2px 4px rgba(0,0,0,0.3);}
-  #scoreboard{background:rgba(0,0,0,0.25);border-radius:12px;padding:8px 16px;color:#fff;text-align:center;}
-  #scoreboard .label{font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;opacity:0.8;}
-  #scoreboard .score{font-family:'Fredoka One',cursive;font-size:2rem;line-height:1;}
-  #heat-bar-wrap{background:linear-gradient(90deg,#222,#1a1a2e);padding:8px 24px;}
-  #heat-label{color:#ff6b35;font-size:0.75rem;font-weight:800;letter-spacing:1px;margin-bottom:4px;}
-  #heat-track{background:#333;border-radius:8px;height:16px;overflow:hidden;}
-  #heat-fill{height:100%;border-radius:8px;transition:width 0.5s ease,background 0.5s;background:linear-gradient(90deg,#00c853,#ff6d00);}
-  #story-box{padding:24px 28px 16px;}
-  #location-tag{display:inline-block;background:#e8f5e9;color:#2e7d32;font-size:0.75rem;font-weight:800;letter-spacing:1px;border-radius:20px;padding:4px 14px;margin-bottom:12px;}
-  #story-text{font-size:1.05rem;line-height:1.6;color:#333;margin-bottom:8px;}
-  #story-emoji{font-size:2.5rem;margin-bottom:8px;}
-  #choices{padding:0 28px 28px;display:flex;flex-direction:column;gap:10px;}
-  .choice-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:14px;padding:14px 20px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;text-align:left;transition:transform 0.1s,box-shadow 0.1s;display:flex;align-items:center;gap:10px;}
-  .choice-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(102,126,234,0.4);}
-  .choice-btn:active{transform:translateY(0);}
-  .choice-btn .pts{margin-left:auto;background:rgba(255,255,255,0.2);border-radius:8px;padding:2px 8px;font-size:0.8rem;white-space:nowrap;}
-  .choice-btn.danger{background:linear-gradient(135deg,#f7971e,#ffd200);}
-  .choice-btn.chaos{background:linear-gradient(135deg,#f953c6,#b91d73);}
-  #meltdown-screen{display:none;padding:32px 28px;text-align:center;background:linear-gradient(135deg,#1a0000,#330000);color:#fff;}
-  #meltdown-screen h2{font-family:'Fredoka One',cursive;font-size:2.4rem;margin-bottom:8px;color:#ff6b35;}
-  #meltdown-screen .final-score{font-family:'Fredoka One',cursive;font-size:4rem;color:#ffd200;margin:12px 0;text-shadow:0 0 20px rgba(255,210,0,0.5);}
-  #meltdown-screen .flavor-text{font-size:1rem;color:#ffb3b3;margin-bottom:8px;line-height:1.5;}
-  #meltdown-screen .rank{display:inline-block;background:#ff6b35;border-radius:20px;padding:6px 20px;font-weight:800;font-size:1.1rem;margin-bottom:20px;}
-  #restart-btn{background:linear-gradient(135deg,#00c853,#009624);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform 0.1s;}
-  #restart-btn:hover{transform:scale(1.05);}
-  #combo-popup{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(135deg,#ffd200,#ff6b35);color:#fff;font-family:'Fredoka One',cursive;font-size:2rem;padding:16px 36px;border-radius:20px;pointer-events:none;transition:transform 0.2s,opacity 0.3s;opacity:0;z-index:999;text-shadow:2px 2px 4px rgba(0,0,0,0.3);}
-  #combo-popup.show{transform:translate(-50%,-50%) scale(1);opacity:1;}
-  #step-counter{color:#999;font-size:0.8rem;padding:0 28px 4px;font-weight:600;}
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+#game{background:#fff;border-radius:24px;max-width:700px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;}
+#header{background:linear-gradient(135deg,#ff6b35,#f7931e);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;}
+#header h1{font-family:'Fredoka One',cursive;color:#fff;font-size:1.6rem;text-shadow:2px 2px 4px rgba(0,0,0,0.3);}
+#scoreboard{background:rgba(0,0,0,0.25);border-radius:12px;padding:8px 16px;color:#fff;text-align:center;}
+#scoreboard .label{font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;opacity:0.8;}
+#scoreboard .score{font-family:'Fredoka One',cursive;font-size:2rem;line-height:1;}
+#heat-bar-wrap{background:linear-gradient(90deg,#222,#1a1a2e);padding:8px 24px;}
+#heat-label{color:#ff6b35;font-size:0.75rem;font-weight:800;letter-spacing:1px;margin-bottom:4px;}
+#heat-track{background:#333;border-radius:8px;height:16px;overflow:hidden;}
+#heat-fill{height:100%;border-radius:8px;transition:width 0.5s ease,background 0.5s;background:linear-gradient(90deg,#00c853,#ff6d00);}
+#story-box{padding:24px 28px 16px;}
+#location-tag{display:inline-block;background:#e8f5e9;color:#2e7d32;font-size:0.75rem;font-weight:800;letter-spacing:1px;border-radius:20px;padding:4px 14px;margin-bottom:12px;}
+#story-text{font-size:1.05rem;line-height:1.6;color:#333;margin-bottom:8px;}
+#story-emoji{font-size:2.5rem;margin-bottom:8px;}
+#choices{padding:0 28px 28px;display:flex;flex-direction:column;gap:10px;}
+.choice-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:14px;padding:14px 20px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;text-align:left;transition:transform 0.1s,box-shadow 0.1s;display:flex;align-items:center;gap:10px;}
+.choice-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(102,126,234,0.4);}
+.choice-btn .pts{margin-left:auto;background:rgba(255,255,255,0.2);border-radius:8px;padding:2px 8px;font-size:0.8rem;white-space:nowrap;}
+.choice-btn.danger{background:linear-gradient(135deg,#f7971e,#ffd200);}
+.choice-btn.chaos{background:linear-gradient(135deg,#f953c6,#b91d73);}
+#step-counter{color:#999;font-size:0.8rem;padding:0 28px 4px;font-weight:600;}
+#combo-popup{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);background:linear-gradient(135deg,#ffd200,#ff6b35);color:#fff;font-family:'Fredoka One',cursive;font-size:2rem;padding:16px 36px;border-radius:20px;pointer-events:none;transition:transform 0.2s,opacity 0.3s;opacity:0;z-index:999;text-shadow:2px 2px 4px rgba(0,0,0,0.3);}
+#combo-popup.show{transform:translate(-50%,-50%) scale(1);opacity:1;}
+#avatar-screen{padding:28px;}
+#avatar-screen h2{font-family:'Fredoka One',cursive;font-size:1.8rem;color:#333;text-align:center;margin-bottom:6px;}
+#avatar-screen p.subtitle{text-align:center;color:#666;margin-bottom:20px;font-size:0.95rem;}
+#avatar-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.avatar-card{border:3px solid #e0e0e0;border-radius:20px;padding:16px;cursor:pointer;transition:all 0.2s;text-align:center;background:#fafafa;}
+.avatar-card:hover{border-color:#667eea;transform:translateY(-3px);box-shadow:0 8px 24px rgba(102,126,234,0.3);background:#f0f0ff;}
+.avatar-card.selected{border-color:#ff6b35;background:#fff5f0;box-shadow:0 8px 24px rgba(255,107,53,0.3);}
+.avatar-figure{font-size:3.5rem;margin-bottom:8px;display:block;}
+.avatar-name{font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;}
+.avatar-age{font-size:0.8rem;color:#888;margin-bottom:6px;}
+.avatar-dance{font-size:0.85rem;color:#667eea;font-weight:700;background:#f0f0ff;border-radius:8px;padding:4px 8px;display:inline-block;}
+#start-game-btn{display:block;margin:20px auto 0;background:linear-gradient(135deg,#ff6b35,#f7931e);color:#fff;border:none;border-radius:14px;padding:14px 40px;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform 0.1s;opacity:0.5;pointer-events:none;}
+#start-game-btn.ready{opacity:1;pointer-events:auto;}
+#start-game-btn.ready:hover{transform:scale(1.05);}
+#meltdown-screen{display:none;padding:32px 28px;text-align:center;background:linear-gradient(135deg,#1a0000,#330000);color:#fff;}
+#meltdown-screen h2{font-family:'Fredoka One',cursive;font-size:2.4rem;margin-bottom:8px;color:#ff6b35;}
+.final-score{font-family:'Fredoka One',cursive;font-size:4rem;color:#ffd200;margin:12px 0;text-shadow:0 0 20px rgba(255,210,0,0.5);}
+.flavor-text{font-size:1rem;color:#ffb3b3;margin-bottom:8px;line-height:1.5;}
+.rank{display:inline-block;background:#ff6b35;border-radius:20px;padding:6px 20px;font-weight:800;font-size:1.1rem;margin-bottom:20px;}
+#see-lecture-btn{background:linear-gradient(135deg,#9c27b0,#673ab7);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform 0.1s;margin-bottom:10px;}
+#see-lecture-btn:hover{transform:scale(1.05);}
+#lecture-screen{display:none;padding:0;background:#fff;overflow:hidden;}
+#lecture-header{background:linear-gradient(135deg,#37474f,#263238);padding:20px 24px;text-align:center;}
+#lecture-header h2{font-family:'Fredoka One',cursive;color:#fff;font-size:1.6rem;}
+#lecture-header p{color:#b0bec5;font-size:0.9rem;margin-top:4px;}
+#lecture-stage{padding:24px;background:#f5f5f5;min-height:200px;}
+.adult-figure{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;padding:16px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);animation:slideIn 0.4s ease both;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-20px);}to{opacity:1;transform:translateX(0);}}
+.adult-avatar{font-size:3rem;flex-shrink:0;display:inline-block;animation:wag 0.5s ease-in-out infinite alternate;}
+@keyframes wag{from{transform:rotate(-8deg);}to{transform:rotate(8deg);}}
+.adult-name{font-weight:800;font-size:0.85rem;color:#666;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;}
+.adult-speech{font-size:0.95rem;color:#333;line-height:1.5;background:#fff9c4;border-radius:12px;padding:12px;border-left:4px solid #ffd200;}
+.adult-speech.angry{background:#ffebee;border-left-color:#f44336;}
+.adult-speech.disappointed{background:#e8f5e9;border-left-color:#4caf50;}
+#kid-response{padding:16px 24px 28px;text-align:center;background:#fff;}
+.kid-doing-dance{font-size:2.5rem;animation:dance 0.4s ease-in-out infinite alternate;display:inline-block;margin:8px 0;}
+@keyframes dance{from{transform:rotate(-12deg) translateY(0);}to{transform:rotate(12deg) translateY(-10px);}}
+#kid-response-text{font-size:0.95rem;color:#555;margin-bottom:12px;font-style:italic;}
+#play-again-btn{background:linear-gradient(135deg,#00c853,#009624);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:800;cursor:pointer;transition:transform 0.1s;}
+#play-again-btn:hover{transform:scale(1.05);}
 </style>
 </head>
 <body>
 <div id="combo-popup">CHAOS!</div>
 <div id="game">
-  <div id="header">
-    <h1>Sunshine State Meltdown!</h1>
-    <div id="scoreboard">
-      <div class="label">Chaos Score</div>
-      <div class="score" id="score-display">0</div>
+  <div id="header"><h1>Sunshine State Meltdown!</h1><div id="scoreboard"><div class="label">Chaos Score</div><div class="score" id="score-display">0</div></div></div>
+  <div id="heat-bar-wrap"><div id="heat-label">REACTOR HEAT -- 0%</div><div id="heat-track"><div id="heat-fill" style="width:0%"></div></div></div>
+  <div id="avatar-screen">
+    <h2>Choose Your Kid!</h2>
+    <p class="subtitle">Pick your 9-11 year old field trip troublemaker. No matter who you pick, that reactor is going down.</p>
+    <div id="avatar-grid">
+      <div class="avatar-card" onclick="selectAvatar(0)"><span class="avatar-figure">&#x1F466;</span><div class="avatar-name">Cayden</div><div class="avatar-age">Age 10 &bull; Roswell, Georgia</div><div class="avatar-dance">&#x1F4A6; Signature Move: The Sprinkler &#x1F4A6;</div></div>
+      <div class="avatar-card" onclick="selectAvatar(1)"><span class="avatar-figure">&#x1F467;</span><div class="avatar-name">Madison</div><div class="avatar-age">Age 9 &bull; Myrtle Beach, SC</div><div class="avatar-dance">&#x1FA77; Signature Move: The Floss &#x1FA77;</div></div>
+      <div class="avatar-card" onclick="selectAvatar(2)"><span class="avatar-figure">&#x1F466;</span><div class="avatar-name">DeShawn</div><div class="avatar-age">Age 11 &bull; Huntsville, Alabama</div><div class="avatar-dance">&#x1F3C3; Signature Move: The Running Man &#x1F3C3;</div></div>
+      <div class="avatar-card" onclick="selectAvatar(3)"><span class="avatar-figure">&#x1F467;</span><div class="avatar-name">Brylee</div><div class="avatar-age">Age 10 &bull; Knoxville, Tennessee</div><div class="avatar-dance">&#x1F40D; Signature Move: The Worm &#x1F40D;</div></div>
     </div>
+    <button id="start-game-btn" onclick="startGame()">Let the Chaos Begin!</button>
   </div>
-  <div id="heat-bar-wrap">
-    <div id="heat-label">REACTOR HEAT -- 0%</div>
-    <div id="heat-track"><div id="heat-fill" style="width:0%"></div></div>
-  </div>
-  <div id="main-game">
-    <div id="story-box">
-      <div id="location-tag">Sweetwater Bluff Nuclear Plant, Georgia</div>
-      <div id="story-emoji"></div>
-      <div id="story-text">Loading...</div>
-    </div>
-    <div id="step-counter"></div>
-    <div id="choices"></div>
-  </div>
-  <div id="meltdown-screen">
-    <div style="font-size:4rem">MELTDOWN!</div>
-    <h2>MELTDOWN ACHIEVED!</h2>
-    <div class="flavor-text" id="meltdown-flavor"></div>
-    <div class="final-score" id="final-score-display">0</div>
-    <div class="rank" id="rank-display"></div>
-    <br><br>
-    <div style="color:#ffcccc;font-size:0.9rem;margin-bottom:20px" id="meltdown-summary"></div>
-    <button id="restart-btn" onclick="restartGame()">Try Again (You Still Cannot Stop It!)</button>
-  </div>
-</div>
-<script>
-var score=0,heat=0,step=0,lastPts=0;
+  <div id="main-game" style="display:none;"><div id="story-box"><div id="location-tag"></div><div id="story-emoji"></div><div id="story-text"></div></div><div id="step-counter"></div><div id="choices"></div></div>
+  <div id="meltdown-screen"><div style="font-size:3.5rem">&#x1F30B;&#x2622;&#xFE0F;&#x1F4A5;</div><h2>MELTDOWN ACHIEVED!</h2><div class="flavor-text" id="meltdown-flavor"></div><div class="final-score" id="final-score-display">0</div><div class="rank" id="rank-display"></div><div style="color:#ffcccc;font-size:0.9rem;margin:0 0 20px" id="meltdown-summary"></div><button id="see-lecture-btn" onclick="showLecture()">&#x1F62C; Face the Music...</button></div>
+  <div id="lecture-screen"><div id="lecture-header"><h2>&#x1F4A2; Time to Face the Adults! &#x1F4A2;</h2><p id="lecture-subtitle"></p></div><div id="lecture-stage"></div><div id="kid-response"><p id="kid-response-text"></p><div class="kid-doing-dance" id="kid-dance-emoji"></div><br><br><button id="play-again-btn" onclick="playAgain()">&#x1F504; Play Again! (It Will Happen Again)</button></div></div>
+</div><script>
+var score=0,heat=0,step=0,lastPts=0,chosenAvatar=null;
+var AVATARS=[
+  {name:'Cayden',age:10,state:'Georgia',emoji:'&#x1F466;',dance:'The Sprinkler',danceEmoji:'&#x1F4A6;&#x1F466;&#x1F4A6;',lectureResponse:"Cayden shrugged, did the Sprinkler for 10 full seconds, then asked if the gift shop was still open. Nobody answered."},
+  {name:'Madison',age:9,state:'South Carolina',emoji:'&#x1F467;',dance:'The Floss',danceEmoji:'&#x1F467;&#x1FA77;&#x1F467;',lectureResponse:"Madison started doing the Floss so aggressively that two adults had to step back. Nobody finished their speech."},
+  {name:'DeShawn',age:11,state:'Alabama',emoji:'&#x1F466;',dance:'The Running Man',danceEmoji:'&#x1F3C3;&#x1F466;&#x1F3C3;',lectureResponse:"DeShawn Running-Manned in place for 45 seconds straight. The lead engineer accidentally started doing it too."},
+  {name:'Brylee',age:10,state:'Tennessee',emoji:'&#x1F467;',dance:'The Worm',danceEmoji:'&#x1F40D;&#x1F467;&#x1F40D;',lectureResponse:"Brylee dropped to the floor and did the Worm the entire length of the hallway. Nobody stopped her. They were too tired."}
+];
+var ADULTS=[
+  {emoji:'&#x1F474;',name:'Principal Wheeler',speeches:{0:"CAYDEN JAMES HUTCHINS. Do you have ANY idea how many buttons you pushed? I counted. It was forty-seven.",1:"Madison Grace, I have called your mother, your grandmother, AND your swim coach. All three said they are not surprised.",2:"DeShawn! I specifically said stay by the bus. THE BUS, son. Did the bus move? No. But you did.",3:"Brylee Ann, your science fair project said you would be an engineer one day. I am rethinking that evaluation."},style:'angry'},
+  {emoji:'&#x1F9D1;&#x200D;&#x1F3EB;',name:'Ms. Dupree, Field Trip Organizer',speeches:{0:"This is the LAST field trip. I am serious. Next year we are going to the sock museum. You cannot break socks.",1:"I wrote seventeen permission slips. SEVENTEEN. I should have written zero.",2:"I am filing this under MY WORST DAY. It is a thick folder, DeShawn. You are on the cover.",3:"Brylee, I watched you find the key drawer. I watched you and said nothing. That is on me. We both failed today."},style:'disappointed'},
+  {emoji:'&#x1F9D1;&#x200D;&#x1F527;',name:'Lead Engineer Kowalski',speeches:{0:"I have a PhD. I have worked here nineteen years. You undid nineteen years of my career in eleven minutes. I respect that. I do not like it.",1:"Young lady, the squirrel you chased knocked out our primary coolant pump. I just want you to know the squirrel is fine.",2:"Off the record, the PA guitar solo was genuinely impressive. On the record: you are banned from this facility.",3:"The raccoons had been planning this for weeks, Brylee. They were waiting for a distraction. You were that distraction. You were used by raccoons."},style:'angry'},
+  {emoji:'&#x1F474;',name:'Mr. Earl, Sweet Tea Victim',speeches:{0:"I lost two large sweet teas because of you. Do you know how long it takes to make a large sweet tea? Twelve minutes. I want those twelve minutes back.",1:"Madison, I do not blame you for the selfie. I blame whoever put that button in selfie range. But I blame you a little.",2:"I was gonna retire next year, DeShawn. Fishing every day. Now I have seventeen incident reports. FISHING, son.",3:"Brylee, the raccoons ate my lunch after the meltdown. I had a pulled pork sandwich. Gone. This started with you."},style:'disappointed'}
+];
 var scoreDisplay=document.getElementById('score-display');
 var heatFill=document.getElementById('heat-fill');
 var heatLabel=document.getElementById('heat-label');
@@ -90,12 +115,22 @@ var choicesDiv=document.getElementById('choices');
 var locationTag=document.getElementById('location-tag');
 var stepCounter=document.getElementById('step-counter');
 var comboPopup=document.getElementById('combo-popup');
+function selectAvatar(idx){
+  chosenAvatar=idx;
+  document.querySelectorAll('.avatar-card').forEach(function(c,i){c.classList.toggle('selected',i===idx);});
+  document.getElementById('start-game-btn').classList.add('ready');
+}
+function startGame(){
+  if(chosenAvatar===null)return;
+  document.getElementById('avatar-screen').style.display='none';
+  document.getElementById('main-game').style.display='block';
+  renderScene(0);
+}
 function addScore(pts){
   score+=pts;scoreDisplay.textContent=score;
   scoreDisplay.style.transform='scale(1.3)';
   setTimeout(function(){scoreDisplay.style.transform='scale(1)'},200);
-  if(pts>0&&lastPts>0){showCombo(pts);}
-  lastPts=pts;
+  if(pts>0&&lastPts>0){showCombo(pts);}lastPts=pts;
 }
 function showCombo(pts){
   comboPopup.textContent='+'+pts+' CHAOS!';
@@ -106,55 +141,54 @@ function setHeat(pct){
   heat=Math.min(100,pct);
   heatFill.style.width=heat+'%';
   heatLabel.textContent='REACTOR HEAT -- '+heat+'%';
-  if(heat<40){heatFill.style.background='linear-gradient(90deg,#00c853,#64dd17)';}
-  else if(heat<70){heatFill.style.background='linear-gradient(90deg,#ffd200,#ff6d00)';}
-  else{heatFill.style.background='linear-gradient(90deg,#ff6b35,#ff1744)';}
+  if(heat<40)heatFill.style.background='linear-gradient(90deg,#00c853,#64dd17)';
+  else if(heat<70)heatFill.style.background='linear-gradient(90deg,#ffd200,#ff6d00)';
+  else heatFill.style.background='linear-gradient(90deg,#ff6b35,#ff1744)';
 }
 var LOCATIONS=['Sweetwater Bluff Nuclear Plant, Georgia','Kudzu Creek Reactor Station, South Carolina','Swamp Gas Power Facility, Louisiana','Peach Fuzz Nuclear Site, Georgia','Biscuit Bottom Power Plant, Alabama','Cottonmouth Cove Nuclear Works, Mississippi','Yall-Power Energy Center, Tennessee'];
 var SCENES=[
-{location:0,emoji:'School Bus',text:"Your class from Sweetwater Middle School just arrived at the Sweetwater Bluff Nuclear Plant for a field trip! Your tour guide, Mr. Earl, has gone to get sweet tea. The control room door is... wide open. What do you do?",heat:5,choices:[{text:'Walk right in and start pressing buttons',pts:150,next:1,style:'chaos'},{text:'Walk in just to take a selfie with the big red button',pts:80,next:2,style:'danger'},{text:'Wait outside and call Mr. Earl',pts:30,next:3}]},
-{location:1,emoji:'Control Panel',text:"You are in the control room! There are so many buttons. The console beeps happily. You notice a dial labeled COOLANT FLOW and a big lever labeled DO NOT TOUCH - SERIOUSLY YALL. The AC is broken and it is 97 degrees outside.",heat:20,choices:[{text:'Turn the COOLANT FLOW dial way down (it looks boring)',pts:200,next:4,style:'chaos'},{text:'Pull the DO NOT TOUCH lever to see what it does',pts:250,next:5,style:'chaos'},{text:'Spill your Capri Sun on the keyboard',pts:175,next:6,style:'danger'}]},
-{location:0,emoji:'Selfie',text:"You are taking the perfect selfie with the big red button. Your elbow bumps it. A calm robotic voice says INITIATING TEST SEQUENCE. Then another voice says WAIT THAT WAS THE REAL BUTTON. Whoops!",heat:35,choices:[{text:'Run away and pretend nothing happened',pts:100,next:7},{text:'Try to press it again to undo it',pts:175,next:4,style:'danger'},{text:'Post the selfie while things escalate',pts:120,next:8}]},
-{location:0,emoji:'Old Man',text:"Mr. Earl returns with two large sweet teas and trips over a garden hose someone left in the hallway, sending both drinks flying directly into the backup cooling panel. The panel sparks and smells like burnt peaches.",heat:25,choices:[{text:'Pour YOUR sweet tea on it too (to cool it down?)',pts:150,next:4,style:'danger'},{text:'Stomp on the sparks (great idea)',pts:130,next:9},{text:'Look for the manual that is definitely a dry read',pts:80,next:10}]},
-{location:2,emoji:'Thermometer',text:"The reactor temperature is climbing fast. Warning lights flash yellow. A fan runs on maximum. A squirrel has somehow gotten into the cooling tower and is confused. The plant PA system plays Sweet Home Alabama on loop for some reason.",heat:55,choices:[{text:'Chase the squirrel -- priorities!',pts:175,next:11,style:'chaos'},{text:'Turn the music up, this is your JAM',pts:150,next:12,style:'danger'},{text:'Grab a fire extinguisher and spray everything',pts:200,next:13,style:'chaos'}]},
-{location:1,emoji:'Red Alarm',text:"The lever disconnects the emergency shutdown relay. Red lights go on EVERYWHERE. A voice on the intercom says Well, shoot. In the parking lot, six engineers drop their brisket sandwiches and sprint toward the building.",heat:60,choices:[{text:'Pull it back the other way really fast',pts:200,next:14,style:'chaos'},{text:'Make a break for the gift shop',pts:120,next:15},{text:'Get on the PA and narrate what is happening',pts:160,next:16,style:'danger'}]},
-{location:1,emoji:'Wet Keyboard',text:"Your Capri Sun has shorted out the automatic temperature limiter. The computer screen now shows a screensaver of a cat playing piano instead of reactor data. The lead engineer walks in, looks at the screen, and just sighs deeply.",heat:45,choices:[{text:'Ask if the cat screensaver means things are OK',pts:130,next:11},{text:'Try to reboot it by unplugging stuff',pts:185,next:13,style:'danger'},{text:'Offer the engineer your backup Kool-Aid',pts:100,next:10}]},
-{location:3,emoji:'Hiding',text:"You hide behind a very tall kudzu vine outside. The alarm is going off. A news van has arrived somehow. Your classmate Brylee runs over and says she found a second control room behind the gift shop that is completely unlocked.",heat:40,choices:[{text:'Go check out that second control room immediately',pts:200,next:5,style:'chaos'},{text:'Find a teacher and confess',pts:60,next:17},{text:'Wave at the news camera',pts:90,next:16}]},
-{location:0,emoji:'Phone',text:"Your post got 12,000 likes in 3 minutes. Unfortunately a social media influencer with 2 million followers says BET I can get MORE views there and livestreams himself rappelling into the reactor building. Things are escalating.",heat:50,choices:[{text:'Go live too -- collab opportunity!',pts:220,next:13,style:'chaos'},{text:'Desperately delete the post but it is too late',pts:100,next:11},{text:'Offer to be his camera person inside',pts:190,next:5,style:'danger'}]},
-{location:0,emoji:'Fire',text:"Stomping on electronics did not help. Your sneakers melted a little. Now the backup panel is on fire AND your shoes smell like burnt rubber in this Georgia heat. A janitor appears with a mop and looks at you disapprovingly.",heat:50,choices:[{text:'Borrow the mop and try to beat out the fire',pts:170,next:13,style:'chaos'},{text:'Use your other Capri Sun to put it out',pts:150,next:6,style:'danger'},{text:'Walk away casually like you were not just stomping wires',pts:100,next:7}]},
-{location:2,emoji:'Manual',text:"The manual is 3,400 pages long. Page one says In case of emergency, DO NOT let middle schoolers into the control room. Page 47 says the emergency cooling valve is behind the vending machines.",heat:35,choices:[{text:'Move the vending machine -- wait, it falls on the valve',pts:190,next:4,style:'chaos'},{text:'Read all 3,400 pages -- you will be here a while',pts:80,next:18},{text:'Close the manual and wing it',pts:120,next:4,style:'danger'}]},
-{location:4,emoji:'Squirrel',text:"You cornered the squirrel near the primary coolant pump. It panics and chews through a wire labeled DO NOT CHEW. The pump stops. A distant klaxon plays what sounds suspiciously like a banjo alarm.",heat:70,choices:[{text:'Dance to the banjo alarm -- it is actually pretty good',pts:220,next:19,style:'chaos'},{text:'Try to reconnect the wire with the squirrels help',pts:200,next:20,style:'chaos'},{text:'Yell SOMEBODY CALL AN ENGINEER down the hallway',pts:130,next:14}]},
-{location:4,emoji:'Music',text:"The PA is now BLASTING. Mr. Earl does an accidental air guitar. Meanwhile, the emergency alert system has mistaken the guitar riff for the all-clear signal and switched off three safety protocols. In Alabama, a cow looks up, concerned.",heat:65,choices:[{text:'Grab the mic and do the full guitar solo',pts:230,next:19,style:'chaos'},{text:'Try to turn it off but accidentally turn up the bass',pts:200,next:20,style:'danger'},{text:'Start a conga line -- the engineers need morale',pts:185,next:21,style:'chaos'}]},
-{location:1,emoji:'Extinguisher',text:"You spray the extinguisher at everything. The white powder coats all the screens, the keyboard, and Mr. Earl. The reactor now has no visible gauges. Nobody knows what is happening. A monitor flickers and shows a shrug emoji before going dark.",heat:75,choices:[{text:'Assume that emoji means everything is fine',pts:250,next:22,style:'chaos'},{text:'Spray more -- maybe it helps more?',pts:230,next:19,style:'chaos'},{text:'Run to the souvenir shop and buy a Certified Nuclear Expert hat',pts:200,next:21,style:'danger'}]},
-{location:1,emoji:'Power Surge',text:"Pulling it back fast created a power surge. Half the lights go out. The half that stay on are now disco-flashing red. Somewhere in Louisiana, a catfish feels something is wrong. The engineers arrive, take one look, and call MORE engineers.",heat:80,choices:[{text:'Suggest everyone take a disco break first',pts:240,next:22,style:'chaos'},{text:'Offer your phone hotspot so engineers can Google the manual',pts:160,next:21},{text:'Point at another kid and blame them',pts:100,next:19}]},
-{location:3,emoji:'Gift Shop',text:"The gift shop is selling I Love Atoms t-shirts and glow-in-the-dark keychains. You buy both. You also find a door in the back labeled DEFINITELY NOT A SECOND CONTROL ROOM. It is absolutely a second control room.",heat:55,choices:[{text:'Enter the second control room -- obviously',pts:200,next:5,style:'chaos'},{text:'Put on the glow keychain and go back to be helpful',pts:150,next:13,style:'danger'},{text:'Load up on souvenirs while chaos reigns outside',pts:120,next:21}]},
-{location:2,emoji:'Microphone',text:"Uh, so the red lights are on... and it smells kinda like the time my uncle s go-kart caught fire... the squirrel is back... Mr. Earl is crying into his sweet tea... I give this trip 2 out of 5 stars. Six hundred workers stop and listen.",heat:60,choices:[{text:'Keep going -- you are on a roll',pts:210,next:22,style:'chaos'},{text:'Drop the mic dramatically',pts:175,next:19,style:'danger'},{text:'Ask the 600 workers what they think you should do',pts:150,next:14}]},
-{location:0,emoji:'Teacher',text:"You find your teacher, Ms. Dupree, who says I TOLD them not to use this school for a field trip. She starts filling out an incident report. It is a 47-page form. While she writes, a pigeon lands on the control panel inside.",heat:45,choices:[{text:'The pigeon is now pecking at important buttons -- do nothing',pts:180,next:11,style:'chaos'},{text:'Offer to fill out the incident report faster',pts:80,next:10},{text:'Sneak back inside while Ms. Dupree is distracted',pts:170,next:5,style:'danger'}]},
-{location:2,emoji:'Keys',text:"You are on page 847. The manual reveals that the backup failsafe is a physical key kept in a drawer labeled KEY. You find the drawer. There are 47 identical keys.",heat:50,choices:[{text:'Try all 47 keys as fast as you can',pts:200,next:20,style:'danger'},{text:'Pick a random key and yolo it',pts:175,next:22,style:'chaos'},{text:'Use ALL 47 keys at once by taping them together',pts:250,next:19,style:'chaos'}]},
-{location:5,emoji:'Radioactive',text:"The reactor temperature is now at 98%. Steam is venting. A family of raccoons has taken over the break room. Local TV is calling this the most chaotic Wednesday in Mississippi history. Your score is looking GREAT though.",heat:90,choices:[{text:'Attempt to negotiate with the raccoons',pts:275,next:'END_RACCOON',style:'chaos'},{text:'Jump in the cooling pond -- wait, that sign says NO',pts:250,next:'END_POND',style:'chaos'},{text:'Declare victory and take a bow',pts:300,next:'END_BOW',style:'chaos'}]},
-{location:4,emoji:'Wrench',text:"You are actually trying to fix it! Respect. Unfortunately, the manual uses metric units and you only know imperial. You convert wrong and accidentally boost reactor power by 200% instead of reducing it by 20%.",heat:85,choices:[{text:'Double down -- maybe 400% will wrap around to 0?',pts:270,next:'END_MATH',style:'chaos'},{text:'Cross your fingers and hit CONFIRM',pts:240,next:'END_BOW',style:'danger'},{text:'Ask your phone calculator app for help',pts:200,next:19,style:'danger'}]},
-{location:6,emoji:'Engineers',text:"The engineers have arrived in full. One of them looks at you and says Are you the one who and you will never know how that sentence ends because a geyser of steam from a pressure valve dramatically interrupts them. It is raining steam in Tennessee.",heat:88,choices:[{text:'Open an umbrella -- you came prepared',pts:260,next:'END_BOW',style:'chaos'},{text:'Shake the engineer s hand through the steam -- closure',pts:230,next:'END_HANDSHAKE',style:'danger'},{text:'Take one final photo for the memories',pts:210,next:'END_RACCOON',style:'chaos'}]},
-{location:5,emoji:'Volcano',text:"EVERY alarm is going. EVERY light is red. The reactor is at 95%. A squirrel, a raccoon, and a pigeon have somehow formed an alliance and are sitting on the master control desk. The PA plays Sweet Home Alabama again, this time slower, like a goodbye.",heat:95,choices:[{text:'Accept your destiny and hit the biggest red button',pts:350,next:'END_BOW',style:'chaos'},{text:'Join the animal coalition -- they seem confident',pts:320,next:'END_RACCOON',style:'chaos'},{text:'Sing along with Sweet Home Alabama',pts:300,next:'END_MATH',style:'danger'}]}
+{location:0,emoji:'School Bus',text:"Your class just arrived at the Sweetwater Bluff Nuclear Plant! Mr. Earl has gone to get sweet tea. The control room door is wide open.",heat:5,choices:[{text:'Walk right in and start pressing buttons',pts:150,next:1,style:'chaos'},{text:'Take a selfie with the big red button',pts:80,next:2,style:'danger'},{text:'Wait outside and call Mr. Earl',pts:30,next:3}]},
+{location:1,emoji:'Control Panel',text:"You are in the control room! There is a dial labeled COOLANT FLOW and a lever labeled DO NOT TOUCH - SERIOUSLY YALL. The AC is broken. It is 97 degrees outside.",heat:20,choices:[{text:'Turn the COOLANT FLOW dial way down',pts:200,next:4,style:'chaos'},{text:'Pull the DO NOT TOUCH lever to see what it does',pts:250,next:5,style:'chaos'},{text:'Spill your Capri Sun on the keyboard',pts:175,next:6,style:'danger'}]},
+{location:0,emoji:'Selfie',text:"Your elbow bumps the big red button. A robotic voice says INITIATING TEST SEQUENCE. Then another says WAIT THAT WAS THE REAL BUTTON. Whoops!",heat:35,choices:[{text:'Run away and pretend nothing happened',pts:100,next:7},{text:'Press it again to undo it',pts:175,next:4,style:'danger'},{text:'Post the selfie while things escalate',pts:120,next:8}]},
+{location:0,emoji:'Old Man',text:"Mr. Earl trips over a garden hose and both sweet teas fly into the backup cooling panel. It sparks and smells like burnt peaches.",heat:25,choices:[{text:'Pour YOUR sweet tea on it to cool it down',pts:150,next:4,style:'danger'},{text:'Stomp on the sparks',pts:130,next:9},{text:'Look for the manual',pts:80,next:10}]},
+{location:2,emoji:'Thermometer',text:"Reactor temperature climbing fast! Warning lights flash yellow. A squirrel got into the cooling tower. The PA plays Sweet Home Alabama on loop.",heat:55,choices:[{text:'Chase the squirrel -- priorities!',pts:175,next:11,style:'chaos'},{text:'Turn the music up, this is your JAM',pts:150,next:12,style:'danger'},{text:'Grab a fire extinguisher and spray everything',pts:200,next:13,style:'chaos'}]},
+{location:1,emoji:'Red Alarm',text:"The lever disconnects the emergency shutdown relay. Red lights everywhere! A voice on the intercom says Well, shoot. Six engineers drop their brisket sandwiches and sprint over.",heat:60,choices:[{text:'Pull it back the other way really fast',pts:200,next:14,style:'chaos'},{text:'Make a break for the gift shop',pts:120,next:15},{text:'Get on the PA and narrate everything',pts:160,next:16,style:'danger'}]},
+{location:1,emoji:'Wet Keyboard',text:"Your Capri Sun shorted out the temperature limiter. The screen now shows a cat playing piano screensaver. The lead engineer walks in and sighs deeply.",heat:45,choices:[{text:'Ask if the cat screensaver means things are OK',pts:130,next:11},{text:'Reboot it by unplugging stuff',pts:185,next:13,style:'danger'},{text:'Offer the engineer your backup Kool-Aid',pts:100,next:10}]},
+{location:3,emoji:'Hiding',text:"You hide behind a kudzu vine. The alarm is going off. A news van arrived. Your classmate says there is a second control room behind the gift shop, completely unlocked.",heat:40,choices:[{text:'Go check out that second control room NOW',pts:200,next:5,style:'chaos'},{text:'Find a teacher and confess',pts:60,next:17},{text:'Wave at the news camera',pts:90,next:16}]},
+{location:0,emoji:'Phone',text:"Your post got 12,000 likes in 3 minutes. An influencer with 2M followers says BET I can get more views and starts rappelling into the reactor building.",heat:50,choices:[{text:'Go live too -- collab opportunity!',pts:220,next:13,style:'chaos'},{text:'Desperately delete the post',pts:100,next:11},{text:'Offer to be his camera person inside',pts:190,next:5,style:'danger'}]},
+{location:0,emoji:'Fire',text:"Stomping sparks did not help. Sneakers melted. The backup panel is on fire. A janitor appears with a mop and disapproving eyes.",heat:50,choices:[{text:'Borrow the mop and beat out the fire',pts:170,next:13,style:'chaos'},{text:'Use your other Capri Sun to put it out',pts:150,next:6,style:'danger'},{text:'Walk away casually',pts:100,next:7}]},
+{location:2,emoji:'Manual',text:"The manual is 3,400 pages. Page one says DO NOT let middle schoolers in the control room. Page 47 says the cooling valve is behind the vending machines.",heat:35,choices:[{text:'Move the vending machine -- it falls on the valve',pts:190,next:4,style:'chaos'},{text:'Read all 3,400 pages',pts:80,next:18},{text:'Close the manual and wing it',pts:120,next:4,style:'danger'}]},
+{location:4,emoji:'Squirrel',text:"The squirrel chews a wire labeled DO NOT CHEW. The coolant pump stops. A distant klaxon plays what sounds suspiciously like a banjo alarm.",heat:70,choices:[{text:'Dance to the banjo alarm -- it is actually good',pts:220,next:19,style:'chaos'},{text:'Try to reconnect the wire with the squirrels help',pts:200,next:20,style:'chaos'},{text:'Yell SOMEBODY CALL AN ENGINEER',pts:130,next:14}]},
+{location:4,emoji:'Music',text:"The PA is BLASTING. Mr. Earl does an accidental air guitar. The emergency alert system mistakes the riff for the all-clear and turns off three safety protocols. In Alabama a cow looks up, concerned.",heat:65,choices:[{text:'Grab the mic and do the full guitar solo',pts:230,next:19,style:'chaos'},{text:'Try to turn it off but turn up the bass',pts:200,next:20,style:'danger'},{text:'Start a conga line -- engineers need morale',pts:185,next:21,style:'chaos'}]},
+{location:1,emoji:'Extinguisher',text:"You sprayed everything. White powder coats all screens and Mr. Earl. Nobody knows what is happening. A monitor shows a shrug emoji then goes dark.",heat:75,choices:[{text:'Assume that emoji means everything is fine',pts:250,next:22,style:'chaos'},{text:'Spray more -- maybe it helps?',pts:230,next:19,style:'chaos'},{text:'Run to the gift shop for a Certified Nuclear Expert hat',pts:200,next:21,style:'danger'}]},
+{location:1,emoji:'Power Surge',text:"Pulling it back fast caused a power surge. Half the lights go out. The rest disco-flash red. Somewhere in Louisiana a catfish feels something is wrong.",heat:80,choices:[{text:'Suggest everyone take a disco break',pts:240,next:22,style:'chaos'},{text:'Offer your hotspot so engineers can Google the manual',pts:160,next:21},{text:'Point at another kid and blame them',pts:100,next:19}]},
+{location:3,emoji:'Gift Shop',text:"The gift shop sells I Love Atoms shirts and glow keychains. There is a door labeled DEFINITELY NOT A SECOND CONTROL ROOM. It is absolutely a second control room.",heat:55,choices:[{text:'Enter the second control room',pts:200,next:5,style:'chaos'},{text:'Put on the glow keychain and go be helpful',pts:150,next:13,style:'danger'},{text:'Load up on souvenirs',pts:120,next:21}]},
+{location:2,emoji:'Microphone',text:"So the red lights are on and it smells like the time my uncle s go-kart caught fire... the squirrel is back... Mr. Earl is crying into his sweet tea... 2 out of 5 stars. Six hundred workers stop and listen.",heat:60,choices:[{text:'Keep going -- you are on a roll',pts:210,next:22,style:'chaos'},{text:'Drop the mic dramatically',pts:175,next:19,style:'danger'},{text:'Ask the 600 workers for advice',pts:150,next:14}]},
+{location:0,emoji:'Teacher',text:"Ms. Dupree says I TOLD them not to use this school for field trips and starts a 47-page incident report. Meanwhile a pigeon lands on the control panel.",heat:45,choices:[{text:'The pigeon pecks important buttons -- do nothing',pts:180,next:11,style:'chaos'},{text:'Offer to fill out the incident report faster',pts:80,next:10},{text:'Sneak back inside while she is distracted',pts:170,next:5,style:'danger'}]},
+{location:2,emoji:'Keys',text:"You are on manual page 847. The failsafe key is in a drawer labeled KEY. There are 47 identical keys.",heat:50,choices:[{text:'Try all 47 keys as fast as you can',pts:200,next:20,style:'danger'},{text:'Pick a random key and yolo it',pts:175,next:22,style:'chaos'},{text:'Tape all 47 keys together and use them at once',pts:250,next:19,style:'chaos'}]},
+{location:5,emoji:'Radioactive',text:"Reactor at 98%. Steam venting. Raccoons took over the break room. Local TV calls this the most chaotic Wednesday in Mississippi history. Your score looks GREAT though.",heat:90,choices:[{text:'Negotiate with the raccoons',pts:275,next:'END_RACCOON',style:'chaos'},{text:'Jump in the cooling pond -- that sign says NO',pts:250,next:'END_POND',style:'chaos'},{text:'Declare victory and take a bow',pts:300,next:'END_BOW',style:'chaos'}]},
+{location:4,emoji:'Wrench',text:"You are actually trying to fix it! Respect. But the manual uses metric and you only know imperial. You boost reactor power 200% instead of reducing it 20%.",heat:85,choices:[{text:'Double down -- maybe 400% wraps to 0',pts:270,next:'END_MATH',style:'chaos'},{text:'Cross fingers and hit CONFIRM',pts:240,next:'END_BOW',style:'danger'},{text:'Ask your phone calculator',pts:200,next:19,style:'danger'}]},
+{location:6,emoji:'Engineers',text:"The engineers arrived. One starts saying Are you the one who-- then a steam geyser from a pressure valve interrupts dramatically. It is raining steam in Tennessee.",heat:88,choices:[{text:'Open an umbrella -- you came prepared',pts:260,next:'END_BOW',style:'chaos'},{text:'Shake the engineer s hand through the steam',pts:230,next:'END_HANDSHAKE',style:'danger'},{text:'Take one final photo',pts:210,next:'END_RACCOON',style:'chaos'}]},
+{location:5,emoji:'Volcano',text:"EVERY alarm going. EVERY light red. Reactor at 95%. A squirrel, raccoon, and pigeon formed an alliance on the master control desk. The PA plays Sweet Home Alabama again, slower, like a goodbye.",heat:95,choices:[{text:'Hit the biggest red button -- accept your destiny',pts:350,next:'END_BOW',style:'chaos'},{text:'Join the animal coalition -- they seem confident',pts:320,next:'END_RACCOON',style:'chaos'},{text:'Sing along with Sweet Home Alabama',pts:300,next:'END_MATH',style:'danger'}]}
 ];
 var ENDINGS={
-  END_RACCOON:{flavor:'The raccoons had a plan all along. Nobody knows what it was. The meltdown was technically their fault, legally speaking. You are in the clear.',bonus:400},
-  END_POND:{flavor:'The cooling pond was actually warm. You splashed around while sirens wailed. Best field trip ever.',bonus:350},
+  END_RACCOON:{flavor:'The raccoons had a plan all along. The meltdown was technically their fault, legally speaking. You are in the clear.',bonus:400},
+  END_POND:{flavor:'The cooling pond was warm. You splashed around while sirens wailed. Best field trip ever.',bonus:350},
   END_BOW:{flavor:'You bowed to thunderous panicked applause. The meltdown was spectacular. Mr. Earl asked for your autograph.',bonus:420},
-  END_MATH:{flavor:'Math is hard. The calculator gave you the right answer but autocorrected reactor to reactor with a music note. Science happened.',bonus:380},
-  END_HANDSHAKE:{flavor:'The engineer shook your hand, said Good hustle, kid, and walked into the steam. You never saw him again.',bonus:360}
+  END_MATH:{flavor:'Math is hard. The calculator autocorrected reactor. Science happened.',bonus:380},
+  END_HANDSHAKE:{flavor:'The engineer said Good hustle, kid and walked into the steam. You never saw him again.',bonus:360}
 };
 var RANKS=[[0,'Accidentally There'],[500,'Mild Troublemaker'],[1000,'Chaos Apprentice'],[1500,'Nuclear Nuisance'],[2000,'Certified Meltdown Artist'],[2500,'Legend of the Control Room'],[3000,'THE SQUIRREL KING']];
 function getRank(s){var r=RANKS[0][1];for(var i=0;i<RANKS.length;i++){if(s>=RANKS[i][0])r=RANKS[i][1];}return r;}
-var currentScene=0;
 function renderScene(sceneId){
   if(typeof sceneId==='string'&&sceneId.indexOf('END_')===0){triggerMeltdown(sceneId);return;}
-  var scene=SCENES[sceneId];
-  if(!scene){triggerMeltdown('END_BOW');return;}
-  currentScene=sceneId;step++;
+  var scene=SCENES[sceneId];if(!scene){triggerMeltdown('END_BOW');return;}
+  step++;
+  var av=AVATARS[chosenAvatar];
   locationTag.textContent=LOCATIONS[scene.location];
   storyEmoji.textContent=scene.emoji;
   storyText.textContent=scene.text;
-  stepCounter.textContent='Choices made: '+(step-1);
+  stepCounter.textContent='Choices made: '+(step-1)+' | Playing as: '+av.name+' ('+av.dance+')';
   setHeat(scene.heat);
   choicesDiv.innerHTML='';
   scene.choices.forEach(function(choice){
@@ -174,16 +208,38 @@ function triggerMeltdown(endKey){
   document.getElementById('final-score-display').textContent=score;
   document.getElementById('rank-display').textContent=getRank(score);
   setHeat(100);
-  document.getElementById('meltdown-summary').textContent='Chaos points: '+score+' | Steps taken: '+step+' | Squirrels involved: probably yes';
+  document.getElementById('meltdown-summary').textContent='Chaos pts: '+score+' | Steps: '+step+' | Squirrels: yes';
 }
-function restartGame(){
-  score=0;heat=0;step=0;lastPts=0;
-  scoreDisplay.textContent='0';
-  document.getElementById('main-game').style.display='block';
+function showLecture(){
   document.getElementById('meltdown-screen').style.display='none';
-  renderScene(0);
+  document.getElementById('lecture-screen').style.display='block';
+  var av=AVATARS[chosenAvatar];
+  document.getElementById('lecture-subtitle').textContent='Some very disappointed grown-ups would like a word with '+av.name+'.';
+  var stage=document.getElementById('lecture-stage');
+  stage.innerHTML='';
+  ADULTS.forEach(function(adult,i){
+    var speech=adult.speeches[chosenAvatar];
+    var div=document.createElement('div');
+    div.className='adult-figure';
+    div.style.animationDelay=(i*0.2)+'s';
+    div.innerHTML='<div class="adult-avatar">'+adult.emoji+'</div>'
+      +'<div><div class="adult-name">'+adult.name+'</div>'
+      +'<div class="adult-speech '+(adult.style||'')+'">'+speech+'</div></div>';
+    stage.appendChild(div);
+  });
+  document.getElementById('kid-response-text').textContent=av.lectureResponse;
+  document.getElementById('kid-dance-emoji').innerHTML=av.danceEmoji;
 }
-renderScene(0);
+function playAgain(){
+  score=0;heat=0;step=0;lastPts=0;chosenAvatar=null;
+  scoreDisplay.textContent='0';setHeat(0);
+  document.querySelectorAll('.avatar-card').forEach(function(c){c.classList.remove('selected');});
+  document.getElementById('start-game-btn').classList.remove('ready');
+  document.getElementById('lecture-screen').style.display='none';
+  document.getElementById('meltdown-screen').style.display='none';
+  document.getElementById('main-game').style.display='none';
+  document.getElementById('avatar-screen').style.display='block';
+}
 </script>
 </body>
 </html>
