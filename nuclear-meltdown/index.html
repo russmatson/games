@@ -101,6 +101,43 @@ body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#1a1a2e 0
 .spark{position:absolute;width:4px;height:4px;border-radius:50%;animation:spark linear infinite;}
 @keyframes spark{0%{transform:translate(0,0);opacity:1;}100%{transform:translate(var(--sx),var(--sy));opacity:0;}}
 
+
+/* ── NEWSCAST SCREEN ── */
+#newscast-screen{display:none;background:#000;overflow:hidden;}
+#tv-frame{background:#111;border:6px solid #333;border-radius:8px;overflow:hidden;position:relative;}
+#tv-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px);pointer-events:none;z-index:10;}
+#tv-header{background:linear-gradient(135deg,#8b0000,#cc0000);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;}
+#tv-header .channel{font-family:'Fredoka One',cursive;color:#ffd200;font-size:1.4rem;text-shadow:1px 1px 3px #000;}
+#tv-header .breaking{background:#ffd200;color:#8b0000;font-weight:800;font-size:0.75rem;padding:3px 10px;border-radius:4px;letter-spacing:1px;animation:blink 0.6s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+#studio-scene{background:linear-gradient(180deg,#1a3a6e 0%,#0d1f3c 60%,#051020 100%);padding:16px;display:flex;gap:16px;align-items:flex-end;min-height:160px;position:relative;}
+/* Desk */
+#anchor-desk{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(180deg,#8b6914,#5a430c);border-top:3px solid #c8a832;z-index:2;}
+/* Anchor figure */
+#anchor-figure{position:relative;z-index:3;flex-shrink:0;text-align:center;}
+#anchor-body{font-size:3.5rem;display:block;animation:anchorBob 2s ease-in-out infinite;}
+@keyframes anchorBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+#anchor-name-tag{background:#ffd200;color:#8b0000;font-size:0.6rem;font-weight:800;border-radius:4px;padding:2px 6px;margin-top:4px;letter-spacing:0.5px;}
+/* Speech bubble */
+#speech-bubble{flex:1;position:relative;z-index:3;margin-bottom:20px;}
+#speech-bubble-inner{background:rgba(255,255,255,0.95);border-radius:16px;padding:14px 16px;position:relative;min-height:80px;border:2px solid #ffd200;}
+#speech-bubble-inner::after{content:'';position:absolute;left:-12px;bottom:20px;border:6px solid transparent;border-right-color:rgba(255,255,255,0.95);}
+#anchor-text{font-size:0.95rem;color:#1a1a1a;line-height:1.5;min-height:60px;}
+#speech-mute-btn{position:absolute;top:6px;right:8px;background:none;border:1px solid #ccc;border-radius:6px;font-size:0.8rem;cursor:pointer;padding:2px 7px;color:#666;}
+/* Ticker */
+#news-ticker{background:#ffd200;padding:4px 0;overflow:hidden;white-space:nowrap;}
+#ticker-inner{display:inline-block;animation:tickerScroll 18s linear infinite;font-size:0.75rem;font-weight:800;color:#8b0000;padding-left:100%;}
+@keyframes tickerScroll{from{transform:translateX(0);}to{transform:translateX(-100%)}}
+/* Behind-anchor graphic */
+#bg-graphic{position:absolute;right:10px;top:10px;width:90px;height:90px;border-radius:8px;overflow:hidden;background:radial-gradient(circle,#ff4400,#8b0000);display:flex;align-items:center;justify-content:center;font-size:2.5rem;z-index:1;animation:bgPulse 1s ease-in-out infinite alternate;}
+@keyframes bgPulse{from{box-shadow:0 0 8px 2px rgba(255,100,0,0.5);}to{box-shadow:0 0 20px 8px rgba(255,200,0,0.8);}}
+#newscast-footer{padding:16px 20px;background:#0d1f3c;text-align:center;}
+#next-segment-btn{background:linear-gradient(135deg,#cc0000,#8b0000);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:transform 0.1s;}
+#next-segment-btn:hover{transform:scale(1.05);}
+#segment-dots{display:flex;gap:8px;justify-content:center;margin-bottom:10px;}
+.seg-dot{width:10px;height:10px;border-radius:50%;background:#333;transition:background 0.3s;}
+.seg-dot.active{background:#ffd200;}
+
 </style>
 </head>
 <body>
@@ -136,7 +173,7 @@ body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#1a1a2e 0
   <div class="cloud-top"></div>
   <div class="reactor-dome"></div>
   <div class="ground"></div>
-</div><div style="font-size:3.5rem">&#x1F30B;&#x2622;&#xFE0F;&#x1F4A5;</div><h2>MELTDOWN ACHIEVED!</h2><div class="flavor-text" id="meltdown-flavor"></div><div class="final-score" id="final-score-display">0</div><div class="rank" id="rank-display"></div><div style="color:#ffcccc;font-size:0.9rem;margin:0 0 20px" id="meltdown-summary"></div><button id="see-lecture-btn" onclick="showLecture()">&#x1F62C; Face the Music...</button></div>
+</div><div style="font-size:3.5rem">&#x1F30B;&#x2622;&#xFE0F;&#x1F4A5;</div><h2>MELTDOWN ACHIEVED!</h2><div class="flavor-text" id="meltdown-flavor"></div><div class="final-score" id="final-score-display">0</div><div class="rank" id="rank-display"></div><div style="color:#ffcccc;font-size:0.9rem;margin:0 0 20px" id="meltdown-summary"></div><button id="see-lecture-btn" onclick="showNewscast()">&#x1F62C; Face the Music...</button></div>
   <div id="lecture-screen"><div id="lecture-header"><h2>&#x1F4A2; Time to Face the Adults! &#x1F4A2;</h2><p id="lecture-subtitle"></p></div><div id="lecture-stage"></div><div id="kid-response"><p id="kid-response-text"></p><div class="kid-doing-dance" id="kid-dance-emoji"></div><br><br><button id="play-again-btn" onclick="playAgain()">&#x1F504; Play Again! (It Will Happen Again)</button></div></div>
 </div><script>
 var score=0,heat=0,step=0,lastPts=0,chosenAvatar=null;
@@ -341,6 +378,118 @@ function startMusic(){
   document.removeEventListener('click',startMusic);
 }
 document.addEventListener('click',startMusic);
+
+// ── NEWSCAST ──────────────────────────────────────────────────────────────
+var speechEnabled = true;
+var currentSegmentIdx = 0;
+var newsSegments = [];
+
+function toggleSpeech(){
+  speechEnabled = !speechEnabled;
+  document.getElementById('speech-mute-btn').innerHTML = speechEnabled ? '&#x1F508;' : '&#x1F507;';
+  if(!speechEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+function speak(text){
+  if(!speechEnabled) return;
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  var utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 0.88;
+  utter.pitch = 1.1;
+  // Pick a female voice if available
+  var voices = window.speechSynthesis.getVoices();
+  var preferred = voices.find(function(v){
+    return /samantha|karen|victoria|zira|female|woman|en.us/i.test(v.name) && v.lang.startsWith('en');
+  }) || voices.find(function(v){ return v.lang.startsWith('en'); });
+  if(preferred) utter.voice = preferred;
+  window.speechSynthesis.speak(utter);
+}
+
+function buildNewsSegments(avatarIdx, finalScore, steps){
+  var av = AVATARS[avatarIdx];
+  var rank = getRank(finalScore);
+  var segs = [
+    "Good evenin', y'all, and bless your hearts, every last one of ya. I'm Brenda Sue Beaumont comin' to you live from Channel Four Eyewitness News. We are fixin' to tell you about the most bewilderin' event to hit the Southeast since Uncle Ricky deep-fried a satellite dish.",
+    "At approximately two-thirty this afternoon, a field trip from a local middle school arrived at a regional nuclear facility. Among the students was a young person by the name of " + av.name + ", age " + av.age + ", from " + av.state + ". Now I don't want to point fingers, but honey, I am absolutely fixin' to point fingers.",
+    "Our sources -- that is, Mr. Earl, who is currently cryin' into his third sweet tea -- tell us that " + av.name + " made approximately " + steps + " decisions today. Every single one of 'em was wronger than a screen door on a submarine. Bless that child's heart, I truly mean that.",
+    "The final Chaos Score, as tallied by our news team and also by the reactor's own alarmin' computer system, came out to " + finalScore + " points. That earns " + av.name + " the rank of " + rank + ". Now that ain't a compliment, sugar. That there is a warnin' label.",
+    "A family of raccoons has taken up residence in the plant's break room and I reckon they are more qualified to run that facility at this point. The lead engineer, when reached for comment, said -- and I quote -- 'Well, shoot.' That's it. That's the whole quote.",
+    "The squirrel involved in today's incident has been described as 'real worked up' and is considered to be at large. If you see this squirrel, do not approach it. It has had a day. We have all had a day.",
+    "In local reaction, Sheriff Andy T. of Mayberry said he was, quote, 'just gonna sit here and look disappointed for a while.' Bo Dukester, reachin' us by CB radio from somewhere on Route 7, said he has slid the General Lee over three counties and never caused a meltdown, and he wants that on record.",
+    "Uncle Randy of Huntsville held a press conference in his driveway, in front of his three flags, to say he don't know if this was the government, the media, or just real bad judgment, but he is fixin' to post about it. Pastor Dale issued a prayer request for the four-county radius and noted that the Lord did not include nuclear incidents in the original Ten Commandments and he considers that an oversight.",
+    "Channel Four Eyewitness News would like to remind our viewers that the Sunshine State Meltdown field trip program has been discontinued effective immediately. Mr. Earl's sweet tea fundraiser to cover damages is now accepting donations. And to " + av.name + " of " + av.state + " -- well, sugar -- bless your heart. You are somethin' else. Good night, y'all, and you stay safe out there. Lord knows somebody's gotta."
+  ];
+  return segs;
+}
+
+function showNewscast(){
+  var av = AVATARS[chosenAvatar];
+  newsSegments = buildNewsSegments(chosenAvatar, score, step);
+  currentSegmentIdx = 0;
+  document.getElementById('meltdown-screen').style.display = 'none';
+  document.getElementById('newscast-screen').style.display = 'block';
+  // Build segment dots
+  var dotsEl = document.getElementById('segment-dots');
+  dotsEl.innerHTML = '';
+  newsSegments.forEach(function(_, i){
+    var d = document.createElement('div');
+    d.className = 'seg-dot' + (i===0?' active':'');
+    d.id = 'dot-'+i;
+    dotsEl.appendChild(d);
+  });
+  renderSegment(0);
+  // Load voices (async on some browsers)
+  if(window.speechSynthesis && window.speechSynthesis.getVoices().length === 0){
+    window.speechSynthesis.addEventListener('voiceschanged', function(){}, {once:true});
+  }
+}
+
+function renderSegment(idx){
+  currentSegmentIdx = idx;
+  var text = newsSegments[idx];
+  var el = document.getElementById('anchor-text');
+  // Typewriter effect
+  el.textContent = '';
+  var i = 0;
+  var speed = 28;
+  clearInterval(window._typeTimer);
+  window._typeTimer = setInterval(function(){
+    if(i < text.length){
+      el.textContent += text[i];
+      i++;
+    } else {
+      clearInterval(window._typeTimer);
+    }
+  }, speed);
+  // Speak it
+  speak(text);
+  // Update dots
+  document.querySelectorAll('.seg-dot').forEach(function(d, di){
+    d.classList.toggle('active', di === idx);
+  });
+  // Update button
+  var btn = document.getElementById('next-segment-btn');
+  if(idx >= newsSegments.length - 1){
+    btn.textContent = 'Face the Music »';
+    btn.onclick = function(){
+      if(window.speechSynthesis) window.speechSynthesis.cancel();
+      document.getElementById('newscast-screen').style.display = 'none';
+      showLecture();
+    };
+  } else {
+    btn.innerHTML = 'Next &raquo;';
+    btn.onclick = function(){ nextSegment(); };
+  }
+}
+
+function nextSegment(){
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  if(currentSegmentIdx < newsSegments.length - 1){
+    renderSegment(currentSegmentIdx + 1);
+  }
+}
+
 </script>
 </body>
 </html>
