@@ -74,6 +74,33 @@ body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#1a1a2e 0
 
 #mute-btn{background:rgba(0,0,0,0.25);border:none;border-radius:8px;color:#fff;font-size:1.1rem;cursor:pointer;padding:4px 10px;margin-left:10px;transition:background 0.2s;vertical-align:middle;}
 #mute-btn:hover{background:rgba(0,0,0,0.45);}
+
+/* ── MELTDOWN GRAPHIC ── */
+#meltdown-graphic{position:relative;height:180px;overflow:hidden;background:linear-gradient(180deg,#0a0000 0%,#1a0000 40%,#3d0000 70%,#ff3300 100%);margin-bottom:0;}
+.sky{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,#ff6600 0%,#cc0000 40%,#1a0000 70%,#000 100%);}
+/* Reactor dome */
+.reactor-dome{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:90px;height:55px;background:linear-gradient(180deg,#888 0%,#555 60%,#333 100%);border-radius:45px 45px 0 0;border:3px solid #aaa;border-bottom:none;}
+.reactor-dome::after{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:radial-gradient(#ff0,#ff6600,#f00);animation:glow 0.4s ease-in-out infinite alternate;box-shadow:0 0 20px 8px rgba(255,100,0,0.9);}
+@keyframes glow{from{box-shadow:0 0 15px 6px rgba(255,80,0,0.8);}to{box-shadow:0 0 30px 14px rgba(255,200,0,1);}}
+/* Ground */
+.ground{position:absolute;bottom:0;left:0;right:0;height:22px;background:linear-gradient(180deg,#555,#333);}
+/* Mushroom cloud */
+.cloud-stem{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);width:18px;background:linear-gradient(90deg,rgba(255,150,0,0.9),rgba(255,200,0,0.7),rgba(255,150,0,0.9));animation:stemRise 1.2s ease-out infinite;}
+@keyframes stemRise{0%{height:0px;opacity:1;}80%{height:80px;opacity:0.9;}100%{height:90px;opacity:0;}}
+.cloud-top{position:absolute;left:50%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(255,180,0,0.95) 0%,rgba(255,80,0,0.8) 50%,rgba(100,0,0,0) 100%);animation:cloudBoom 1.2s ease-out infinite;}
+@keyframes cloudBoom{0%{width:0;height:0;bottom:130px;opacity:1;}70%{width:110px;height:80px;bottom:110px;opacity:0.9;}100%{width:130px;height:90px;bottom:105px;opacity:0;}}
+/* Warning signs */
+.warn-left,.warn-right{position:absolute;bottom:25px;font-size:1.6rem;animation:flashWarn 0.5s ease-in-out infinite alternate;}
+.warn-left{left:8%;}
+.warn-right{right:8%;}
+@keyframes flashWarn{from{opacity:0.2;transform:scale(0.9);}to{opacity:1;transform:scale(1.1);}}
+/* Radiation particles */
+.particle{position:absolute;border-radius:50%;animation:float linear infinite;}
+@keyframes float{0%{transform:translateY(0) scale(1);opacity:0.9;}100%{transform:translateY(-160px) scale(0.2);opacity:0;}}
+/* Sparks flying */
+.spark{position:absolute;width:4px;height:4px;border-radius:50%;animation:spark linear infinite;}
+@keyframes spark{0%{transform:translate(0,0);opacity:1;}100%{transform:translate(var(--sx),var(--sy));opacity:0;}}
+
 </style>
 </head>
 <body>
@@ -96,7 +123,20 @@ body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#1a1a2e 0
     <button id="start-game-btn" onclick="startGame()">Let the Chaos Begin!</button>
   </div>
   <div id="main-game" style="display:none;"><div id="story-box"><div id="location-tag"></div><div id="story-emoji"></div><div id="story-text"></div></div><div id="step-counter"></div><div id="choices"></div></div>
-  <div id="meltdown-screen"><div style="font-size:3.5rem">&#x1F30B;&#x2622;&#xFE0F;&#x1F4A5;</div><h2>MELTDOWN ACHIEVED!</h2><div class="flavor-text" id="meltdown-flavor"></div><div class="final-score" id="final-score-display">0</div><div class="rank" id="rank-display"></div><div style="color:#ffcccc;font-size:0.9rem;margin:0 0 20px" id="meltdown-summary"></div><button id="see-lecture-btn" onclick="showLecture()">&#x1F62C; Face the Music...</button></div>
+  <div id="meltdown-screen"><div id="meltdown-graphic">
+  <div class="sky"></div>
+  <div class="warn-left">&#x2622;&#xFE0F;</div>
+  <div class="warn-right">&#x2622;&#xFE0F;</div>
+  <div class="particle" style="left:20%;width:10px;height:10px;background:#ff6600;animation-duration:1.1s;animation-delay:0s;bottom:30px;"></div>
+  <div class="particle" style="left:35%;width:6px;height:6px;background:#ffcc00;animation-duration:0.8s;animation-delay:0.3s;bottom:40px;"></div>
+  <div class="particle" style="left:60%;width:8px;height:8px;background:#ff3300;animation-duration:1.3s;animation-delay:0.1s;bottom:35px;"></div>
+  <div class="particle" style="left:75%;width:5px;height:5px;background:#ff9900;animation-duration:0.9s;animation-delay:0.5s;bottom:45px;"></div>
+  <div class="particle" style="left:50%;width:7px;height:7px;background:#ffee00;animation-duration:1s;animation-delay:0.2s;bottom:38px;"></div>
+  <div class="cloud-stem"></div>
+  <div class="cloud-top"></div>
+  <div class="reactor-dome"></div>
+  <div class="ground"></div>
+</div><div style="font-size:3.5rem">&#x1F30B;&#x2622;&#xFE0F;&#x1F4A5;</div><h2>MELTDOWN ACHIEVED!</h2><div class="flavor-text" id="meltdown-flavor"></div><div class="final-score" id="final-score-display">0</div><div class="rank" id="rank-display"></div><div style="color:#ffcccc;font-size:0.9rem;margin:0 0 20px" id="meltdown-summary"></div><button id="see-lecture-btn" onclick="showLecture()">&#x1F62C; Face the Music...</button></div>
   <div id="lecture-screen"><div id="lecture-header"><h2>&#x1F4A2; Time to Face the Adults! &#x1F4A2;</h2><p id="lecture-subtitle"></p></div><div id="lecture-stage"></div><div id="kid-response"><p id="kid-response-text"></p><div class="kid-doing-dance" id="kid-dance-emoji"></div><br><br><button id="play-again-btn" onclick="playAgain()">&#x1F504; Play Again! (It Will Happen Again)</button></div></div>
 </div><script>
 var score=0,heat=0,step=0,lastPts=0,chosenAvatar=null;
@@ -107,11 +147,52 @@ var AVATARS=[
   {name:'Brylee',age:10,state:'Tennessee',emoji:'&#x1F467;',dance:'The Worm',danceEmoji:'&#x1F40D;&#x1F467;&#x1F40D;',lectureResponse:"Brylee dropped to the floor and did the Worm the entire length of the hallway. Nobody stopped her. They were too tired."}
 ];
 var ADULTS=[
-  {emoji:'&#x1F474;',name:'Principal Wheeler',speeches:{0:"CAYDEN JAMES HUTCHINS. Do you have ANY idea how many buttons you pushed? I counted. It was forty-seven.",1:"Madison Grace, I have called your mother, your grandmother, AND your swim coach. All three said they are not surprised.",2:"DeShawn! I specifically said stay by the bus. THE BUS, son. Did the bus move? No. But you did.",3:"Brylee Ann, your science fair project said you would be an engineer one day. I am rethinking that evaluation."},style:'angry'},
-  {emoji:'&#x1F9D1;&#x200D;&#x1F3EB;',name:'Ms. Dupree, Field Trip Organizer',speeches:{0:"This is the LAST field trip. I am serious. Next year we are going to the sock museum. You cannot break socks.",1:"I wrote seventeen permission slips. SEVENTEEN. I should have written zero.",2:"I am filing this under MY WORST DAY. It is a thick folder, DeShawn. You are on the cover.",3:"Brylee, I watched you find the key drawer. I watched you and said nothing. That is on me. We both failed today."},style:'disappointed'},
-  {emoji:'&#x1F9D1;&#x200D;&#x1F527;',name:'Lead Engineer Kowalski',speeches:{0:"I have a PhD. I have worked here nineteen years. You undid nineteen years of my career in eleven minutes. I respect that. I do not like it.",1:"Young lady, the squirrel you chased knocked out our primary coolant pump. I just want you to know the squirrel is fine.",2:"Off the record, the PA guitar solo was genuinely impressive. On the record: you are banned from this facility.",3:"The raccoons had been planning this for weeks, Brylee. They were waiting for a distraction. You were that distraction. You were used by raccoons."},style:'angry'},
-  {emoji:'&#x1F474;',name:'Mr. Earl, Sweet Tea Victim',speeches:{0:"I lost two large sweet teas because of you. Do you know how long it takes to make a large sweet tea? Twelve minutes. I want those twelve minutes back.",1:"Madison, I do not blame you for the selfie. I blame whoever put that button in selfie range. But I blame you a little.",2:"I was gonna retire next year, DeShawn. Fishing every day. Now I have seventeen incident reports. FISHING, son.",3:"Brylee, the raccoons ate my lunch after the meltdown. I had a pulled pork sandwich. Gone. This started with you."},style:'disappointed'}
+  {
+    name:'Bo Dukester, Hazzard County Georgia',
+    emoji:'&#x1F920;',
+    desc:'Dukes of Hazzard good ol boy, drives a Dodge Charger, hates the government but loves sweet tea',
+    speeches:{
+      0:"BOY, I slid that General Lee over three county lines to get here and WHAT did I find?! Cayden, I know your daddy and I know your granddaddy and NEITHER of them ever melted down a nuclear plant. There is a FIRST TIME for everything and it ain\'t supposed to be YOU.",
+      1:"Madison, sugar, I once jumped a BRIDGE in the General Lee and felt less fear than I do right now lookin at this reactor. Your mama is gonna hear about this from Boss Hogg AND from me.",
+      2:"DeShawn, I respect the hustle, I do. But son, the Duke boys NEVER melted down a NUCLEAR PLANT. We blew up the county water tower ONCE and that was an ACCIDENT. This right here was a SERIES of decisions.",
+      3:"Brylee, the only thing that\'s supposed to go BOOM in Hazzard County is my exhaust pipe. Not a WHOLE REACTOR. Daisy is VERY disappointed and she asked me to tell you that specifically."
+    }
+  },
+  {
+    name:'Sheriff Andy T., Mayberry SC',
+    emoji:'&#x1F477;',
+    desc:'Andy Griffith style small-town sheriff, gentle but deeply disappointed, no gun needed',
+    speeches:{
+      0:"Now Cayden... I\'m not even gonna raise my voice. You know why? Because I don\'t NEED to. I\'m just gonna sit here... and look at you... and let you think about what you\'ve done. Opie never did this. OPIE.",
+      1:"Madison, I been sheriff of this county for twenty-two years. I have dealt with Otis Campbell drunk in a ditch every Friday. I have never -- NOT ONCE -- had to file a report titled CHILD CAUSES NUCLEAR EVENT. Until today.",
+      2:"DeShawn, son, I like you. You know I like you. That\'s why this hurts so much. Barney is in the car right now hyperventilating into a paper bag and that is YOUR doing.",
+      3:"Brylee, I\'m gonna hum the theme song to calm myself down. [hums] ...Okay. That didn\'t help. A NUCLEAR PLANT, Brylee. In my COUNTY."
+    }
+  },
+  {
+    name:'Uncle Randy, Huntsville Alabama',
+    emoji:'&#x1F9E2;',
+    desc:'MAGA uncle, American flag shirt, extremely loud, convinced this is a government conspiracy somehow',
+    speeches:{
+      0:"CAYDEN! Now I don\'t normally agree with the DEEP STATE but even THEY are saying you went too far! I got three flags on my truck -- AMERICAN, ALABAMA, and one that just says FREEDOM -- and NONE of them represent melting down nuclear plants! I am VERY CONFLICTED right now!",
+      1:"Madison, I\'ve been saying for YEARS that these plants are run by the ELITES and NOW you\'ve gone and PROVED IT by being the only person who could walk in unsupervised! I\'m proud of the point you made but NOT the MELTDOWN part!",
+      2:"DeShawn, I\'ve been posting about plant safety on Facebook since 2019 and NOBODY listened! You listened TOO MUCH! There is a MIDDLE GROUND between ignoring it and CAUSING A MELTDOWN and you skipped RIGHT PAST IT!",
+      3:"Brylee, I don\'t know if this was the government, the media, or just bad luck but I am TELLING you that your face is going to be on a meme by Tuesday and I will NOT be sharing it. Probably. I might share it. It\'s a good meme."
+    }
+  },
+  {
+    name:'Pastor Dale, Smoky Mountain Tennessee',
+    emoji:'&#x26EA;',
+    desc:'Country preacher, turns everything into a sermon, Bible in one hand, sweet tea in the other',
+    speeches:{
+      0:"Cayden... I have preached on FIRE AND BRIMSTONE for thirty years. I described it as HOT, CHAOTIC, and IMPOSSIBLE TO STOP. I did NOT mean it as a BLUEPRINT. The Lord gave us free will, son, and you have used approximately ALL of it.",
+      1:"Madison, the good Lord said let there be LIGHT -- not let there be a RADIATION EVENT in a four-county radius. I am adding a new chapter to my sermon series called DO NOT TOUCH THE REACTOR BUTTONS and it is dedicated to YOU.",
+      2:"DeShawn, Proverbs says pride goeth before a fall. It does NOT say pride goeth before a NUCLEAR MELTDOWN. That is a NEW LEVEL that the Bible did not anticipate and I have been preaching for thirty-one years.",
+      3:"Brylee Ann, I baptized you. I married your parents. I officiated your grandma\'s funeral. And NOW I have to add \'supervised a nuclear incident\' to my pastoral record. The Lord is testing me and the answer is YOU."
+    }
+  }
 ];
+
 var scoreDisplay=document.getElementById('score-display');
 var heatFill=document.getElementById('heat-fill');
 var heatLabel=document.getElementById('heat-label');
