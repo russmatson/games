@@ -488,6 +488,77 @@ function nextSegment(){
   if(currentSegmentIdx < newsSegments.length - 1){
     renderSegment(currentSegmentIdx + 1);
   }
+
+  // ── CONSEQUENCE BLEED-THROUGH SYSTEM ──────────────────────────────────────
+  window._chaosFlags = {};
+
+  const FLAG_CONSEQUENCES = {
+      leverPulled: {
+            text: "Bless your heart — that lever you yanked earlier is still floppin' around like a screen door in a hurricane. Addin' heat faster than a revival tent in August.",
+            heatBonus: 10
+      },
+      coolantTurned: {
+            text: "That coolant dial you messed with? Still spun down tighter than Meemaw's pickle jar. Engineers are hollerin' bout it like it's a Waffle House on a Saturday night.",
+            heatBonus: 15
+      },
+      buttonPressed: {
+            text: "That big ol' button you slapped earlier is blinkin' like a drunk firefly. Every time someone walks by, it beeps louder than a lifted truck with a Yeti sticker.",
+            heatBonus: 8
+      },
+      fireExtinguisher: {
+            text: "The extinguisher powder is gumming up every vent — stickier than sweet tea at a cookout. Temps climbing because of it, hon.",
+            heatBonus: 12
+      },
+      paSystem: {
+            text: "The PA is still screeching like a cat in a dryer. Engineers can't hear the alarm warnings over your Kidz Bop remix. Lord have mercy.",
+            heatBonus: 9
+      },
+      newsVan: {
+            text: "That news van you flagged down? They brought three more. Place is lit up brighter than the Waffle House sign on I-75. Security's running around like chickens.",
+            heatBonus: 7
+      }
+  };
+
+  const SCENE_FLAGS = {
+      1:  'buttonPressed',
+      4:  'coolantTurned',
+      5:  'leverPulled',
+      7:  'newsVan',
+      12: 'paSystem',
+      13: 'fireExtinguisher',
+      14: 'leverPulled'
+  };
+
+  const _origRender = renderScene;
+  renderScene = function(scene) {
+      if (SCENE_FLAGS[scene] !== undefined) {
+            window._chaosFlags[SCENE_FLAGS[scene]] = true;
+      }
+      _origRender(scene);
+
+      const activeFlags = Object.keys(window._chaosFlags);
+      if (activeFlags.length > 0) {
+            const storyTextEl = document.getElementById('story-text');
+            if (!storyTextEl) return;
+            const flagKey = activeFlags[Math.floor(Math.random() * activeFlags.length)];
+            const c = FLAG_CONSEQUENCES[flagKey];
+
+            const bleedDiv = document.createElement('div');
+            bleedDiv.style.cssText = 'margin-top:12px;padding:10px 14px;background:#fff3cd;border-left:4px solid #ff6b00;border-radius:6px;font-size:0.85em;color:#5a3a00;font-style:italic;';
+            bleedDiv.innerHTML = '&#127777;&#65039; <strong>Still dealin\'  with it:</strong> ' + c.text;
+            storyTextEl.parentNode.insertBefore(bleedDiv, storyTextEl.nextSibling);
+
+            const heatLabel = document.getElementById('heat-label');
+            const match = heatLabel ? heatLabel.textContent.match(/(\d+)%/) : null;
+            if (match) setHeat(Math.min(parseInt(match[1]) + c.heatBonus, 100));
+      }
+  };
+
+  const _origPlay = playAgain;
+  playAgain = function() { window._chaosFlags = {}; _origPlay(); };
+  const _origStart = startGame;
+  startGame = function() { window._chaosFlags = {}; _origStart(); };
+  // ─────────────────────────────────────────────────────────────────────────────
 }
 
 </script>
