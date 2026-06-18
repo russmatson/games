@@ -32,9 +32,13 @@ canvas{border-radius:16px;border:4px solid #ff00ff;box-shadow:0 0 30px #ff00ff88
 #rb:hover{transform:translateY(-3px)}
 .st{position:absolute;pointer-events:none;font-size:1.5em;animation:sf .8s ease-out forwards}
 @keyframes sf{from{opacity:1;transform:translateY(0) scale(1) rotate(0)}to{opacity:0;transform:translateY(-80px) scale(2) rotate(360deg)}}
+#muteBtn{position:fixed;bottom:12px;right:12px;z-index:1000;background:linear-gradient(135deg,#6600cc,#cc00cc);color:#fff;border:2px solid #ff00ff;border-radius:10px;padding:8px 12px;font-family:'Press Start 2P',monospace;font-size:0.45em;cursor:pointer;box-shadow:0 4px 0 #440066;transition:all .1s}
+#muteBtn:hover{transform:translateY(-2px)}
 </style>
 </head>
 <body>
+<audio id="bgm" src="https://cdn1.suno.ai/145f4327-7c6c-4e52-95b4-40bbd43c822a.mp3" loop></audio>
+<button id="muteBtn" onclick="toggleMute()">&#9835; MUTE</button>
 <h1>&#127758; STATE CAPITAL CHAOS &#127758;</h1>
 <div id="sb">STREAK: <span id="sk">0</span> &#128293;</div>
 <div id="gc">
@@ -74,6 +78,8 @@ function newQ(){done=false;document.getElementById('ol').textContent='';document
 function check(ans,btn){if(done)return;done=true;if(ans===cC){btn.classList.add('ok');score+=10;streak++;document.getElementById('pts').textContent=score;document.getElementById('sk').textContent=streak;if(streak%3===0){document.getElementById('ol').textContent=rnd(PM);goPet();}else{goCorrect();spawnStars();}}else{btn.classList.add('no');document.querySelectorAll('.ab').forEach(b=>{if(b.textContent===cC)b.classList.add('ok');});streak=0;document.getElementById('sk').textContent=0;lives--;upLives();document.getElementById('ol').textContent=rnd(WL);goDecap();if(lives<=0){setTimeout(over,2200);return;}}setTimeout(newQ,2200);}
 function over(){if(af)cancelAnimationFrame(af);const o=document.getElementById('ov');o.style.display='flex';document.getElementById('ot').textContent=lives<=0?'GAME OVER':'YOU WIN!!';document.getElementById('om').textContent='Final Score: '+score;}
 function restart(){score=0;lives=3;streak=0;done=false;document.getElementById('pts').textContent=0;document.getElementById('sk').textContent=0;upLives();document.getElementById('ov').style.display='none';document.getElementById('ol').textContent='';newQ();}
+// Audio autoplay
+(function(){const bgm=document.getElementById('bgm');const p=()=>bgm.play().catch(()=>{});document.addEventListener('click',function s(){p();document.removeEventListener('click',s);},{once:true});p();window.toggleMute=function(){bgm.muted=!bgm.muted;document.getElementById('muteBtn').textContent=bgm.muted?'♪ PLAY':'♪ MUTE';};})();
 newQ();
 </script>
 </body>
