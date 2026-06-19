@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Revolutionary Chaos: Muskets & Mayhem</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1a0a00; color: #fff; font-family: 'Georgia', serif; overflow: hidden; }
+#gameCanvas { display: block; margin: 0 auto; border: 2px solid #8B6914; }
+#ui { position: absolute; top: 0; left: 0; width: 100%; padding: 8px 16px; background: rgba(0,0,0,0.7); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+#oneliner { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: bold; color: #FFD700; text-shadow: 2px 2px 4px #000; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
+#trivia { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(20,10,0,0.97); border: 3px solid #8B6914; border-radius: 12px; padding: 30px; max-width: 560px; width: 90%; display: none; z-index: 100; }
+#trivia h2 { color: #FFD700; margin-bottom: 16px; font-size: 18px; }
+#trivia p { margin-bottom: 18px; font-size: 15px; line-height: 1.5; }
+.tBtn { display: block; width: 100%; margin: 8px 0; padding: 10px 16px; background: #3a2000; border: 1px solid #8B6914; color: #fff; font-size: 14px; cursor: pointer; border-radius: 6px; text-align: left; }
+.tBtn:hover { background: #6a4000; }
+#battleTitle { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); font-size: 28px; font-weight: bold; color: #FFD700; text-shadow: 3px 3px 6px #000; opacity: 0; transition: opacity 1s; pointer-events: none; }
+#smallpoxBar { position: absolute; bottom: 40px; right: 16px; font-size: 12px; color: #ff6666; }
+#msgBox { position: absolute; bottom: 120px; left: 16px; font-size: 13px; color: #aaffaa; }
+</style>
+</head>
+<body>
+<div id="ui">
+  <span>&#x2694;&#xFE0F; REVOLUTIONARY CHAOS</span>
+  <span>Score: <b id="score">0</b></span>
+  <span>&#x2764; <span id="lives">3</span> &nbsp; &#x2621; Plague: <span id="plague">0</span>%</span>
+  <span>Battle: <span id="battleName">Bunker Hill</span></span>
+</div>
+<canvas id="gameCanvas"></canvas>
+<div id="oneliner"></div>
+<div id="battleTitle"></div>
+<div id="smallpoxBar">SMALLPOX: <span id="poxLevel">0</span>% spread</div>
+<div id="msgBox"></div>
+<div id="trivia">
+  <h2>&#x1F4DC; HISTORY CHECK — MCAS STYLE</h2>
+  <p id="triviaQ"></p>
+  <div id="triviaAnswers"></div>
+  <p id="triviaFeedback" style="margin-top:12px;font-weight:bold;color:#FFD700;"></p>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 800;
+canvas.height = 500;
+
+// ---- Game State ----
+let score = 0, lives = 3, plagueLevel = 0, gameOver = false, paused = false;
+let bullets = [], enemies = [], particles = [], poxClouds = [];
+let triviaActive = false, triviaCallback = null;
+let frameCount = 0, lastEnemySpawn = 0, lastPoxSpawn = 0;
+let currentBattle = 0;
+
+const battles = [
+  { name: 'Battle of Bunker Hill', bg: '#2a1a05', ground: '#4a3010', year: 1775 },
+  { name: 'Battle of Trenton', bg: '#0a0a1a', ground: '#4a4a5a', year: 1776 },
+  { name: 'Battle of Gettysburg', bg: '#1a0a0a', ground: '#5a3a20', year: 1863 },
+  { name: 'Battle of Antietam', bg: '#0a1a0a', ground: '#3a5a20', year: 1862 },
+];
+
+const oneLiners = [
+  "Looks like he took the SHOT heard round the world!",
+  "That's what I call a REVOLUTIONARY exit!",
+  "He really FELL for independence!",
+  "Another redcoat bites the dust — literally!",
+  "I guess he wasn't ready for that DISCHARGE!",
+  "History just got a little shorter!",
+  "TAXATION without representation... or a pulse!",
+  "He won't be crossing the Delaware now!",
+  "That's a GRAVE misunderstanding of tactics!",
+  "Consider yourself DEMOBILIZED, soldier!",
+  "He fought for the Crown — past tense!",
+  "Well, that escalated QUICKLY — like the colonies!",
+];
+
+const poxOneLiners = [
+  "Smallpox: nature's most patriotic weapon!",
+  "Washington would approve of this biological strategy!",
+  "They said it was a pox on both your houses — starting with yours!",
+  "Inoculation? Never heard of her!",
+  "The British sent soldiers. We sent germs. Same energy.",
+];
+
+const triviaBank = [
+  {
+    q: "What was the main complaint of American colonists that led to the Revolutionary War?",
+    a: ["Taxation without representation", "The king was too far away", "They wanted to trade with France", "They disagreed with British fashion"],
+    correct: 0,
+    bonus: "TRIVIA BONUS: +200 points! Colonists had no elected representatives in British Parliament."
+  },
+  {
+    q: "The Battle of Bunker Hill (1775) was significant because:",
+    a: ["The British won but suffered heavy casualties, showing colonists could fight", "The Americans won a decisive victory", "It was the last battle of the Revolution", "George Washington personally led the charge"],
+    correct: 0,
+    bonus: "TRIVIA BONUS: +200 points! The British won but lost over 1,000 men — a costly 'victory.'"
+  },
+  {
+    q: "Which document, written mainly by Thomas Jefferson, declared American independence?",
+    a: ["The Articles of Confederation", "The Constitution", "The Declaration of Independence", "The Federalist Papers"],
+    correct: 2,
+    bonus: "TRIVIA BONUS: +200 points! The Declaration was adopted July 4, 1776."
+  },
+  {
+    q: "The Civil War began in April 1861 when Confederate forces attacked which federal fort?",
+    a: ["Fort Knox", "Fort Sumter", "Fort McHenry", "Fort Ticonderoga"],
+    correct: 1,
+    bonus: "TRIVIA BONUS: +200 points! Fort Sumter in South Carolina was the first battle."
+  },
+  {
+    q: "President Lincoln issued the Emancipation Proclamation in 1863. What did it do?",
+    a: ["Ended the Civil War", "Freed enslaved people in Confederate states", "Gave women the right to vote", "Created the Union Army"],
+    correct: 1,
+    bonus: "TRIVIA BONUS: +200 points! It declared slaves in rebel states 'forever free.'"
+  },
+  {
+    q: "The Battle of Gettysburg (1863) was a turning point because:",
+    a: ["The Union captured the Confederate capital", "The Confederate Army was forced to retreat and never invaded the North again", "General Lee surrendered", "Abraham Lincoln led troops personally"],
+    correct: 1,
+    bonus: "TRIVIA BONUS: +200 points! After Gettysburg, the Confederacy was on the defensive."
+  },
+];
+
+// ---- Player ----
+const player = { x: 100, y: 380, w: 30, h: 50, speed: 4, color: '#4488ff', shootCooldown: 0, facing: 1 };
+const keys = {};
+
+// ---- Input ----
+document.addEventListener('keydown', e => { keys[e.key] = true; if (e.key === ' ') e.preventDefault(); });
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+canvas.addEventListener('click', e => {
+  if (triviaActive || paused || gameOver) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+  // Shoot toward click
+  const dx = mx - (player.x + 15);
+  const dy = my - (player.y + 25);
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist > 0 && player.shootCooldown <= 0) {
+    bullets.push({ x: player.x+15, y: player.y+20, vx: (dx/dist)*14, vy: (dy/dist)*14, fromPlayer: true });
+    player.shootCooldown = 25;
+    spawnMuzzleFlash(player.x+20, player.y+20);
+  }
+});
+
+// ---- Helpers ----
+function showOneLiner(txt, color) {
+  const el = document.getElementById('oneliner');
+  el.textContent = txt;
+  el.style.color = color || '#FFD700';
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 2800);
+}
+
+function showMsg(txt) {
+  document.getElementById('msgBox').textContent = txt;
+  setTimeout(() => { document.getElementById('msgBox').textContent = ''; }, 3000);
+}
+
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function randInt(min, max) { return Math.floor(rand(min, max+1)); }
+function pick(arr) { return arr[randInt(0, arr.length-1)]; }
+
+function spawnMuzzleFlash(x, y) {
+  for (let i = 0; i < 8; i++) {
+    particles.push({ x, y, vx: rand(-3,3), vy: rand(-3,1), life: 15, maxLife: 15, color: '#ffaa00', size: rand(2,5) });
+  }
+}
+
+function spawnBlood(x, y) {
+  for (let i = 0; i < 18; i++) {
+    particles.push({ x, y, vx: rand(-5,5), vy: rand(-6,2), life: 30, maxLife: 30, color: i%3===0?'#ff0000':'#cc0000', size: rand(2,6) });
+  }
+}
+
+function spawnExplosion(x, y, col) {
+  for (let i = 0; i < 25; i++) {
+    const angle = rand(0, Math.PI*2);
+    const spd = rand(1, 6);
+    particles.push({ x, y, vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd - 2, life: 40, maxLife: 40, color: col || '#ff6600', size: rand(2,7) });
+  }
+}
+
+// ---- Enemy spawn ----
+function spawnEnemy() {
+  const side = Math.random() > 0.3 ? 'right' : 'left';
+  const x = side === 'right' ? 820 : -40;
+  const types = ['redcoat','confederate','hessian'];
+  const type = pick(types);
+  enemies.push({
+    x, y: rand(280, 370), w: 28, h: 50,
+    vx: side === 'right' ? -rand(1.2,2.5) : rand(1.2,2.5),
+    hp: type === 'hessian' ? 3 : 2,
+    maxHp: type === 'hessian' ? 3 : 2,
+    type,
+    shootTimer: randInt(60, 180),
+    color: type === 'redcoat' ? '#cc2200' : type === 'confederate' ? '#556644' : '#888855',
+    hasPox: false,
+  });
+}
+
+// ---- Pox cloud ----
+function spawnPoxCloud() {
+  poxClouds.push({ x: rand(200, 750), y: rand(280, 380), r: 35, life: 280, maxLife: 280, spreading: false });
+  plagueLevel = Math.min(100, plagueLevel + 8);
+  document.getElementById('poxLevel').textContent = plagueLevel;
+  document.getElementById('plague').textContent = plagueLevel;
+  showOneLiner(pick(poxOneLiners), '#aaffaa');
+  if (plagueLevel >= 30 && plagueLevel < 50) showMsg('⚠️ Plague spreading through camp!');
+  if (plagueLevel >= 60) showMsg('☠️ Epidemic conditions! Enemies weakening!');
+  // High plague weakens enemies
+  if (plagueLevel >= 50) {
+    for (const e of enemies) { if (Math.random() < 0.4) { e.hasPox = true; e.hp = Math.max(1, e.hp - 1); } }
+  }
+}
+
+// ---- Trivia ----
+let usedTrivia = [];
+function triggerTrivia() {
+  if (triviaActive) return;
+  let available = triviaBank.filter((_, i) => !usedTrivia.includes(i));
+  if (available.length === 0) { usedTrivia = []; available = triviaBank; }
+  const idx = triviaBank.indexOf(pick(available));
+  usedTrivia.push(idx);
+  const q = triviaBank[idx];
+
+  triviaActive = true;
+  paused = true;
+  document.getElementById('triviaQ').textContent = q.q;
+  document.getElementById('triviaFeedback').textContent = '';
+  const answDiv = document.getElementById('triviaAnswers');
+  answDiv.innerHTML = '';
+  q.a.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tBtn';
+    btn.textContent = String.fromCharCode(65+i) + ') ' + ans;
+    btn.onclick = () => {
+      const correct = i === q.correct;
+      document.getElementById('triviaFeedback').textContent = correct ? '✅ CORRECT! ' + q.bonus : '❌ WRONG! The answer was: ' + q.a[q.correct];
+      document.getElementById('triviaFeedback').style.color = correct ? '#aaffaa' : '#ff6666';
+      if (correct) {
+        score += 200;
+        document.getElementById('score').textContent = score;
+        spawnExplosion(400, 250, '#00ffaa');
+      }
+      Array.from(answDiv.querySelectorAll('.tBtn')).forEach(b => b.disabled = true);
+      setTimeout(() => {
+        document.getElementById('trivia').style.display = 'none';
+        triviaActive = false;
+        paused = false;
+      }, 2000);
+    };
+    answDiv.appendChild(btn);
+  });
+  document.getElementById('trivia').style.display = 'block';
+}
+
+// ---- Battle title ----
+function showBattleTitle() {
+  const b = battles[currentBattle % battles.length];
+  document.getElementById('battleName').textContent = b.name;
+  const el = document.getElementById('battleTitle');
+  el.textContent = b.name + ' — ' + b.year;
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 3000);
+}
+
+// ---- Draw functions ----
+function drawBackground() {
+  const b = battles[currentBattle % battles.length];
+  ctx.fillStyle = b.bg;
+  ctx.fillRect(0, 0, 800, 500);
+  // Sky gradient
+  const sky = ctx.createLinearGradient(0, 0, 0, 340);
+  sky.addColorStop(0, b.bg);
+  sky.addColorStop(1, '#3a2a10');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, 800, 340);
+  // Ground
+  ctx.fillStyle = b.ground;
+  ctx.fillRect(0, 340, 800, 160);
+  // Smoke/fog
+  for (let i = 0; i < 5; i++) {
+    ctx.fillStyle = 'rgba(200,200,180,0.04)';
+    ctx.beginPath();
+    ctx.ellipse(100+i*160+(Math.sin(frameCount*0.005+i)*20), 320, 120, 30, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+  // Distant hills
+  ctx.fillStyle = 'rgba(60,40,20,0.5)';
+  ctx.beginPath();
+  ctx.moveTo(0,340);
+  for (let x=0; x<=800; x+=80) {
+    ctx.lineTo(x, 300 - Math.sin(x*0.02)*25);
+  }
+  ctx.lineTo(800,340); ctx.closePath(); ctx.fill();
+}
+
+function drawPlayer() {
+  const p = player;
+  // Body
+  ctx.fillStyle = '#224488';
+  ctx.fillRect(p.x+5, p.y+20, 20, 28);
+  // Head
+  ctx.fillStyle = '#ffcc99';
+  ctx.beginPath(); ctx.arc(p.x+15, p.y+14, 10, 0, Math.PI*2); ctx.fill();
+  // Hat (tricorn)
+  ctx.fillStyle = '#112244';
+  ctx.fillRect(p.x+5, p.y+3, 20, 7);
+  ctx.beginPath(); ctx.moveTo(p.x+2,p.y+10); ctx.lineTo(p.x+28,p.y+10); ctx.lineTo(p.x+24,p.y+3); ctx.lineTo(p.x+6,p.y+3); ctx.closePath(); ctx.fill();
+  // Legs
+  ctx.fillStyle = '#aabbcc';
+  ctx.fillRect(p.x+6, p.y+47, 8, 12); ctx.fillRect(p.x+16, p.y+47, 8, 12);
+  // Musket
+  ctx.strokeStyle = '#885522'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(p.x+20, p.y+24); ctx.lineTo(p.x+45, p.y+22); ctx.stroke();
+  // Shoot cooldown flash
+  if (player.shootCooldown > 18) {
+    ctx.fillStyle = 'rgba(255,200,0,0.5)';
+    ctx.beginPath(); ctx.arc(p.x+45, p.y+22, 8, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawEnemy(e) {
+  const colors = { redcoat: '#cc2200', confederate: '#556644', hessian: '#8a8840' };
+  const hatColors = { redcoat: '#cc2200', confederate: '#334422', hessian: '#5a5820' };
+  ctx.fillStyle = colors[e.type] || '#cc0000';
+  ctx.fillRect(e.x+4, e.y+20, 20, 28);
+  // Head
+  ctx.fillStyle = e.hasPox ? '#99bb88' : '#ffcc99';
+  ctx.beginPath(); ctx.arc(e.x+14, e.y+14, 10, 0, Math.PI*2); ctx.fill();
+  if (e.hasPox) {
+    ctx.fillStyle = '#cc4400';
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath(); ctx.arc(e.x+9+i*2.5, e.y+12+Math.sin(i)*4, 1.5, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  // Hat
+  ctx.fillStyle = hatColors[e.type] || '#880000';
+  ctx.fillRect(e.x+4, e.y+3, 20, 8);
+  // Legs
+  ctx.fillStyle = '#aaaaaa';
+  ctx.fillRect(e.x+5, e.y+47, 8, 12); ctx.fillRect(e.x+15, e.y+47, 8, 12);
+  // Musket
+  ctx.strokeStyle = '#663300'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(e.x+14, e.y+26); ctx.lineTo(e.x-12, e.y+24); ctx.stroke();
+  // HP bar
+  const hpW = 28 * (e.hp / e.maxHp);
+  ctx.fillStyle = '#550000'; ctx.fillRect(e.x+1, e.y-8, 28, 5);
+  ctx.fillStyle = e.hp === e.maxHp ? '#00cc44' : '#ffaa00';
+  ctx.fillRect(e.x+1, e.y-8, hpW, 5);
+  // Label
+  ctx.fillStyle = '#fff'; ctx.font = '9px Georgia';
+  ctx.fillText(e.type.toUpperCase(), e.x, e.y-10);
+}
+
+function drawBullets() {
+  for (const b of bullets) {
+    ctx.fillStyle = b.fromPlayer ? '#FFD700' : '#ff4400';
+    ctx.beginPath();
+    const len = 8;
+    ctx.ellipse(b.x, b.y, len, 2.5, Math.atan2(b.vy, b.vx), 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    const alpha = p.life / p.maxLife;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawPoxClouds() {
+  for (const c of poxClouds) {
+    const alpha = (c.life / c.maxLife) * 0.35;
+    ctx.globalAlpha = alpha;
+    const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+    grad.addColorStop(0, '#88ff44');
+    grad.addColorStop(1, 'rgba(100,200,50,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fill();
+    // Skull icon
+    ctx.globalAlpha = alpha * 1.5;
+    ctx.fillStyle = '#fff';
+    ctx.font = '18px serif';
+    ctx.fillText('☠', c.x-9, c.y+7);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawHUD() {
+  // Score pulse on kill
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+}
+
+// ---- Update ----
+function update() {
+  if (paused || gameOver) return;
+  frameCount++;
+
+  // Player movement
+  if (keys['ArrowLeft'] || keys['a']) player.x = Math.max(0, player.x - player.speed);
+  if (keys['ArrowRight'] || keys['d']) player.x = Math.min(760, player.x + player.speed);
+  if (keys['ArrowUp'] || keys['w']) player.y = Math.max(270, player.y - player.speed);
+  if (keys['ArrowDown'] || keys['s']) player.y = Math.min(390, player.y + player.speed);
+  if (player.shootCooldown > 0) player.shootCooldown--;
+
+  // Keyboard shoot (spacebar = shoot right)
+  if (keys[' '] && player.shootCooldown <= 0) {
+    bullets.push({ x: player.x+40, y: player.y+22, vx: 14, vy: 0, fromPlayer: true });
+    player.shootCooldown = 25;
+    spawnMuzzleFlash(player.x+40, player.y+22);
+  }
+
+  // Spawn enemies
+  if (frameCount - lastEnemySpawn > Math.max(80, 160 - score/50)) {
+    spawnEnemy();
+    lastEnemySpawn = frameCount;
+    if (enemies.length > 8) enemies.splice(0,1);
+  }
+
+  // Spawn pox clouds every ~600 frames
+  if (frameCount - lastPoxSpawn > 600 + randInt(0,200)) {
+    spawnPoxCloud();
+    lastPoxSpawn = frameCount;
+  }
+
+  // Trivia every 1000 points
+  if (score > 0 && score % 1000 < 50 && Math.floor(score/1000) > Math.floor((score-50)/1000)) {
+    setTimeout(triggerTrivia, 500);
+  }
+
+  // Battle advance
+  if (score > 0 && score % 2000 < 50) {
+    currentBattle = Math.floor(score / 2000) % battles.length;
+    showBattleTitle();
+  }
+
+  // Update enemies
+  for (let i = enemies.length-1; i >= 0; i--) {
+    const e = enemies[i];
+    e.x += e.vx;
+    // Bounce at edges
+    if (e.x < 0 || e.x > 770) { e.vx *= -1; }
+    // Enemy shoots
+    e.shootTimer--;
+    if (e.shootTimer <= 0) {
+      const dx = player.x - e.x;
+      const dy = player.y - e.y;
+      const d = Math.sqrt(dx*dx+dy*dy);
+      const spd = e.hasPox ? 5 : 7;
+      bullets.push({ x: e.x+14, y: e.y+26, vx: (dx/d)*spd, vy: (dy/d)*spd, fromPlayer: false });
+      e.shootTimer = randInt(90, 200) + (e.hasPox ? 60 : 0);
+    }
+    // Remove if off-screen for too long
+    if (e.x < -100 || e.x > 900) enemies.splice(i,1);
+  }
+
+  // Update bullets
+  for (let i = bullets.length-1; i >= 0; i--) {
+    const b = bullets[i];
+    b.x += b.vx; b.y += b.vy;
+    if (b.x < -20 || b.x > 820 || b.y < 0 || b.y > 520) { bullets.splice(i,1); continue; }
+
+    if (b.fromPlayer) {
+      // Check vs enemies
+      for (let j = enemies.length-1; j >= 0; j--) {
+        const e = enemies[j];
+        if (b.x > e.x && b.x < e.x+28 && b.y > e.y && b.y < e.y+60) {
+          spawnBlood(e.x+14, e.y+20);
+          e.hp--;
+          if (e.hp <= 0) {
+            spawnExplosion(e.x+14, e.y+25, '#ff2200');
+            enemies.splice(j,1);
+            score += 100 + (e.hasPox ? 50 : 0);
+            document.getElementById('score').textContent = score;
+            showOneLiner(pick(oneLiners));
+          }
+          bullets.splice(i,1);
+          break;
+        }
+      }
+      // Check vs pox clouds (player can shoot them away)
+      for (let k = poxClouds.length-1; k >= 0; k--) {
+        const c = poxClouds[k];
+        const dx = b.x - c.x, dy = b.y - c.y;
+        if (Math.sqrt(dx*dx+dy*dy) < c.r) {
+          poxClouds.splice(k,1);
+          score += 50;
+          document.getElementById('score').textContent = score;
+          showMsg('💨 Dispersed a plague cloud! +50');
+          bullets.splice(i,1);
+          break;
+        }
+      }
+    } else {
+      // Enemy bullet vs player
+      if (b.x > player.x && b.x < player.x+30 && b.y > player.y && b.y < player.y+60) {
+        spawnBlood(player.x+15, player.y+25);
+        lives--;
+        document.getElementById('lives').textContent = lives;
+        bullets.splice(i,1);
+        if (lives <= 0) { triggerGameOver(); }
+      }
+    }
+  }
+
+  // Player in pox cloud
+  for (const c of poxClouds) {
+    const dx = player.x+15 - c.x, dy = player.y+25 - c.y;
+    if (Math.sqrt(dx*dx+dy*dy) < c.r) {
+      if (frameCount % 60 === 0) { lives = Math.max(0, lives-1); document.getElementById('lives').textContent = lives; if (lives <= 0) triggerGameOver(); }
+    }
+  }
+
+  // Particles
+  for (let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life--;
+    if (p.life <= 0) particles.splice(i,1);
+  }
+
+  // Pox clouds fade
+  for (let i = poxClouds.length-1; i >= 0; i--) {
+    poxClouds[i].life--;
+    if (poxClouds[i].life <= 0) poxClouds.splice(i,1);
+  }
+}
+
+function triggerGameOver() {
+  gameOver = true;
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.fillRect(0,0,800,500);
+  ctx.fillStyle = '#FFD700';
+  ctx.font = 'bold 48px Georgia';
+  ctx.textAlign = 'center';
+  ctx.fillText('GAME OVER', 400, 220);
+  ctx.font = '24px Georgia';
+  ctx.fillStyle = '#fff';
+  ctx.fillText('Final Score: ' + score, 400, 270);
+  ctx.font = '18px Georgia';
+  ctx.fillStyle = '#aaa';
+  ctx.fillText('Press R to play again', 400, 310);
+  ctx.textAlign = 'left';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'r' || e.key === 'R') {
+    if (gameOver) { location.reload(); }
+  }
+});
+
+// ---- Game loop ----
+function draw() {
+  ctx.clearRect(0, 0, 800, 500);
+  drawBackground();
+  drawPoxClouds();
+  drawBullets();
+  for (const e of enemies) drawEnemy(e);
+  drawPlayer();
+  drawParticles();
+  drawHUD();
+  if (gameOver) {
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fillRect(0,0,800,500);
+    ctx.fillStyle = '#FFD700';
+    ctx.font = 'bold 48px Georgia';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', 400, 220);
+    ctx.font = '24px Georgia';
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Final Score: ' + score, 400, 270);
+    ctx.font = '18px Georgia';
+    ctx.fillStyle = '#aaa';
+    ctx.fillText('Press R to play again', 400, 310);
+    ctx.textAlign = 'left';
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ---- Start ----
+showBattleTitle();
+setTimeout(triggerTrivia, 2000);
+loop();
+</script>
+</body>
+</html>
